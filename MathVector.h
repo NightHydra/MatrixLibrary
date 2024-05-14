@@ -2,6 +2,9 @@
 
 #ifndef __MATRIX_LIBRARY_H
 #define __MATRIX_LIBRARY_H
+#include "pch.h"
+#include "pch.cpp"
+
 
 class MathVector
 {

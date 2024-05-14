@@ -1,3 +1,5 @@
+#include "pch.h"
+#include "pch.cpp"
 #include <math.h>
 #include "MathVector.h"
 
@@ -59,9 +61,18 @@ void MathVector::copyVector(const MathVector& copyFrom)
 	}
 }
 
+bool MathVector::isZeroVector() const
+{
+	unsigned int operationSize = getOperationSize();
 
+	for (unsigned int i = 0; i < operationSize; ++i)
+	{
+		if (data_[i] != 0) return true;
+	}
+	return false;
+}
 
-unsigned MathVector::getOperationSize() const
+unsigned int MathVector::getOperationSize() const
 {
 	if (useSizeFromOperations_ == true)
 	{
