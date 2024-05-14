@@ -10,7 +10,7 @@ public:
 
 	MathVector();
 
-	MathVector(int size);
+	MathVector(unsigned int size);
 
 	MathVector(const MathVector& other) { this->copyVector(other); }
 	MathVector& operator= (const MathVector& other)
@@ -22,6 +22,8 @@ public:
 	//     the reference to a variable but is useful for accessing
 	//     elements
 	double& operator[](int index) const {return data_[index];}
+
+	bool isZeroVector() const;
 
 	unsigned int getSize() const { return size_; }
 	unsigned int getOperationSize() const;
@@ -86,7 +88,7 @@ MathVector operator*(const MathVector& vec, double alpha);
 double dotProduct(const MathVector& v1, const MathVector& v2);
 double operator*(const MathVector& v1, const MathVector& v2);
 
-
+MathVector findProjection(const MathVector& b, const MathVector& a);
 
 
 #endif // __MATRIX_LIBARY_H

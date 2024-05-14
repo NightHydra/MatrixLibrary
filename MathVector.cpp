@@ -6,9 +6,11 @@ MathVector::MathVector()
 	size_ = 0;
 	useSizeFromOperations_ = 0;
 	preAlloc_ = 0;
+
+	data_ = nullptr;
 }
 
-MathVector::MathVector(int size)
+MathVector::MathVector(unsigned int size)
 {
 	if (size == 0)
 	{
@@ -132,6 +134,7 @@ bool MathVector::operator*=(double alpha)
 	{
 		data_[i] *= alpha;
 	}
+	return true;
 }
 
 
@@ -151,8 +154,10 @@ double MathVector::dotProduct(const MathVector& other) const
 	double result = 0.0;
 	for (unsigned int i = 0; i < getOperationSize(); ++i)
 	{
-		data_[i] *= other.data_[i];
+		result = data_[i] * other.data_[i];
 	}
+	return result;
+
 }
 
 
@@ -164,6 +169,14 @@ double MathVector::dotProduct(const MathVector& other) const
 */
 bool MathVector::push_back(double element)
 {
+	// Cannot double size if preAlloc would overflow
+	// This fancy math is so that we can tell if we overflow
+	//     no matter the size of preAlloc.
+	// We should never return false here though since this would mean our vector
+	//     is very, very big and would also mean that the vector would use
+	//     ~ 2 GB of data.
+	if (preAlloc_ >> (sizeof(preAlloc_)*8 - 1) > 0) return false;
+
 	if (size_ == preAlloc_)
 	{
 		// Make a new array to store all the data
@@ -180,6 +193,8 @@ bool MathVector::push_back(double element)
 	// Post-imcrement here increases the size while inserting the new
 	//    element at the correct location
 	data_[size_++] = element;
+
+	return true;
 }
 
 
@@ -191,22 +206,30 @@ MathVector add(const MathVector& v1, const MathVector& v2)
 {
 	MathVector newVec(v1);
 	newVec += v2;
+
+	return newVec;
 }
 MathVector operator+(const MathVector& v1, const MathVector& v2)
 {
 	MathVector newVec(v1);
 	newVec += v2;
+
+	return newVec;
 }
 
 MathVector scalarMult(const MathVector& vec, double alpha)
 {
 	MathVector newVec(vec);
 	newVec *= alpha;
+
+	return newVec;
 }
 MathVector operator*(const MathVector& vec, double alpha)
 {
 	MathVector newVec(vec);
 	newVec *= alpha;
+
+	return newVec;
 }
 
 /**
@@ -244,4 +267,3 @@ MathVector findProjection(const MathVector& b, const MathVector& a)
 	double scalar = (b.dotProduct(a)) / (a.dotProduct(a));
 	return a * scalar;
 }
-
