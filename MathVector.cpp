@@ -72,6 +72,25 @@ bool MathVector::isZeroVector() const
 	return false;
 }
 
+/**
+ * @brief Returns the magnitude of the vector as defined by the mathematical
+ *     definition as the root of the sum of the squares of each component.
+ * @return 0.0 if the vectors operation size is of size 0 and the magnitude
+ *     otherwise.
+ * @note To get the square of the magnitude just call "v1.dotProduct(v1)".
+ */
+double MathVector::getMagnitude() const
+{
+	double mag = 0.0;
+	unsigned int opsize = getOperationSize();
+
+	for (unsigned int i = 0; i < opsize; ++i)
+	{
+		mag += data_[i] * data_[i];
+	}
+	return sqrt(mag);
+}
+
 unsigned int MathVector::getOperationSize() const
 {
 	if (useSizeFromOperations_ == true)
@@ -90,11 +109,18 @@ Operations we can perform on the vectors
 
 
 /*
-* Overload the addition operator to add another vector to this vector.
-*     This vector then becomes the sum of both vectors
+* 
 @Returns whether or not the second vector was successfully
    added to this vector
 */
+
+/**
+ * @brief Overload the addition operator to add another vector to this vector.
+ *     This vector then becomes the sum of both vectors
+ * @param mv2 The @ref mathvector which is added to this vector
+ * @return true if the vectors could be successfully added and false if the vectors
+ *     do not have the same size or the operation size of either vector is equal to 0
+ */
 bool MathVector::operator+=(const MathVector& mv2)
 {
 	if (mv2.getOperationSize() != this->getOperationSize()

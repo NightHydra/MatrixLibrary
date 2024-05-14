@@ -27,6 +27,7 @@ public:
 	double& operator[](int index) const {return data_[index];}
 
 	bool isZeroVector() const;
+	double getMagnitude() const;
 
 	unsigned int getSize() const { return size_; }
 	unsigned int getOperationSize() const;
