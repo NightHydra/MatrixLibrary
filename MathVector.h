@@ -17,7 +17,9 @@ public:
 
 	MathVector(const MathVector& other) { this->copyVector(other); }
 	MathVector& operator= (const MathVector& other)
-	   { this->deleteAllocatedMemory(); this->copyVector(other); }
+	{
+		this->deleteAllocatedMemory(); this->copyVector(other); return *this;
+	}
 
 	~MathVector() { this->deleteAllocatedMemory(); }
 
