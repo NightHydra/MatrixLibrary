@@ -42,6 +42,7 @@ MathMatrix& MathMatrix::operator=(const MathMatrix& other)
 {
 	cleanUpDynamicallyAllocatedMemory();
 	copy(other);
+	return *this;
 }
 
 void MathMatrix::cleanUpDynamicallyAllocatedMemory()

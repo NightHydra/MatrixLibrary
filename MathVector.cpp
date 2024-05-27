@@ -3,6 +3,8 @@
 #include <math.h>
 #include "MathVector.h"
 
+static constexpr double ALPHA = 0.001;
+
 MathVector::MathVector()
 {
 	size_ = 0;
@@ -17,13 +19,11 @@ MathVector::MathVector(unsigned int size)
 	if (size == 0)
 	{
 		size_ = 0;
-		useSizeFromOperations_ = 0;
 		preAlloc_ = 0;
 	}
 	else
 	{
 		size_ = size;
-		useSizeFromOperations_ = size;
 
 		preAlloc_ = 2;
 		// Make sure whats allocated is a power of 2
@@ -33,7 +33,56 @@ MathVector::MathVector(unsigned int size)
 			preAlloc_ <<= 1;
 		}
 		data_ = new double[preAlloc_];
+
+		for (unsigned int i = 0; i < size; ++i)
+		{
+			data_[i] = 0.0F;
+		}
 	}
+}
+
+MathVector::MathVector(const std::initializer_list<double>  arr)
+{
+	size_ = arr.size();
+	preAlloc_ = 2;
+
+	while (preAlloc_ < size_)
+	{
+		preAlloc_ <<= 1;
+	}
+	data_ = new double[preAlloc_];
+
+	std::initializer_list<double>::iterator itr = arr.begin();
+
+	for (unsigned int i = 0; i < size_; ++i)
+	{
+		data_[i] = *itr;
+		++itr;
+	}
+}
+
+MathVector& MathVector::operator=(const std::initializer_list<double> arr)
+{
+	deleteAllocatedMemory();
+
+	size_ = arr.size();
+	preAlloc_ = 2;
+
+	while (preAlloc_ < size_)
+	{
+		preAlloc_ <<= 1;
+	}
+	data_ = new double[preAlloc_];
+
+	std::initializer_list<double>::iterator itr = arr.begin();
+
+	for (unsigned int i = 0; i < size_; ++i)
+	{
+		data_[i] = *itr;
+		++itr;
+	}
+
+	return *this;
 }
 
 
@@ -61,15 +110,23 @@ void MathVector::copyVector(const MathVector& copyFrom)
 	}
 }
 
+void MathVector::deleteAllocatedMemory()
+{
+	if (size_ != 0)
+	{
+		delete[] data_;
+	}
+}
+
 bool MathVector::isZeroVector() const
 {
 	unsigned int operationSize = getOperationSize();
 
 	for (unsigned int i = 0; i < operationSize; ++i)
 	{
-		if (data_[i] != 0) return true;
+		if (!approxEqual(data_[i], 0.0F)) return false;
 	}
-	return false;
+	return true;
 }
 
 /**
@@ -84,11 +141,27 @@ double MathVector::getMagnitude() const
 	double mag = 0.0;
 	unsigned int opsize = getOperationSize();
 
+	if (opsize == 0) return NAN;
+
 	for (unsigned int i = 0; i < opsize; ++i)
 	{
 		mag += data_[i] * data_[i];
 	}
 	return sqrt(mag);
+}
+
+bool MathVector::isEqualTo(const MathVector& other) const
+{
+	if (other.size_ != this->size_) return false;
+
+	for (unsigned int i = 0; i < size_; ++i)
+	{
+		if (!approxEqual(this->data_[i], other.data_[i]))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 unsigned int MathVector::getOperationSize() const
@@ -204,8 +277,19 @@ double MathVector::dotProduct(const MathVector& other) const
 *     @ref size_ > sizeSeenInOperations_ it will still be placed
 *     after the last element in the vector
 */
-bool MathVector::push_back(double element)
+bool MathVector::push_back(const double& element)
 {
+
+	// Case where we havent allocated anything yet
+	if (size_ == 0)
+	{
+		size_ = 1;
+		preAlloc_ = 2;
+		data_ = new double[preAlloc_];
+		data_[0] = element;
+		return true; // <----- Return
+	}
+
 	// Cannot double size if preAlloc would overflow
 	// This fancy math is so that we can tell if we overflow
 	//     no matter the size of preAlloc.
@@ -238,6 +322,16 @@ bool MathVector::push_back(double element)
 //////////////////////////////////////////////////////////////////////////
 // Outside of class functions that generate new vectors when used
 /////////////////////////////////////////////////////////////////////////
+
+bool approxEqual(const double& d1, const double& d2)
+{
+	return fabs(d1 - d2) < ALPHA;
+}
+
+bool operator==(const MathVector& v1, const MathVector& v2)
+{
+	return v1.isEqualTo(v2);
+}
 
 MathVector add(const MathVector& v1, const MathVector& v2)
 {

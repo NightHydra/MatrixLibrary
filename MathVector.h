@@ -2,8 +2,11 @@
 
 #ifndef __MATRIX_LIBRARY_H
 #define __MATRIX_LIBRARY_H
+#include <initializer_list>
+
 #include "pch.h"
 #include "pch.cpp"
+
 
 
 class MathVector
@@ -20,6 +23,8 @@ public:
 	{
 		this->deleteAllocatedMemory(); this->copyVector(other); return *this;
 	}
+	MathVector(const std::initializer_list<double> arr);
+	MathVector& operator=(const std::initializer_list<double> arr);
 
 	~MathVector() { this->deleteAllocatedMemory(); }
 
@@ -27,6 +32,8 @@ public:
 	//     the reference to a variable but is useful for accessing
 	//     elements
 	double& operator[](int index) const {return data_[index];}
+
+	bool isEqualTo(const MathVector& other) const;
 
 	bool isZeroVector() const;
 	double getMagnitude() const;
@@ -41,7 +48,7 @@ public:
 
 	double dotProduct(const MathVector& other) const;
 
-	bool push_back(double element);
+	bool push_back(const double& element);
 
 
 	
@@ -55,7 +62,7 @@ private:
 	/*
 	Private Member functions for the class
 	*/
-	void deleteAllocatedMemory() { delete[] data_;}
+	void deleteAllocatedMemory();
 
 	/*
 	Private Member Variables
@@ -83,6 +90,9 @@ private:
 };
 
 // Outside of class functions that generate new vectors when used
+bool approxEqual(const double& d1, const double& d2);
+
+bool operator==(const MathVector& v1, const MathVector& v2);
 
 MathVector add(const MathVector& v1, const MathVector& v2);
 MathVector operator+(const MathVector& v1, const MathVector& v2);
