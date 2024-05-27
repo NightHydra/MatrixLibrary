@@ -41,7 +41,7 @@ MathVector::MathVector(unsigned int size)
 	}
 }
 
-MathVector::MathVector(const std::initializer_list<double>  arr)
+MathVector::MathVector(const std::initializer_list<double> arr)
 {
 	size_ = arr.size();
 	preAlloc_ = 2;
@@ -162,6 +162,38 @@ bool MathVector::isEqualTo(const MathVector& other) const
 		}
 	}
 	return true;
+}
+bool MathVector::isEqualTo(const std::initializer_list<double> arr) const
+{
+	unsigned int opSize = this->getOperationSize();
+	if (opSize != arr.size()) return false;
+
+	std::initializer_list<double>::iterator itr = arr.begin();
+	for (unsigned int i = 0; i < opSize; ++i)
+	{
+		if (data_[i] != *itr) return false;
+		++itr;
+	}
+	return true;
+}
+
+bool MathVector::isNotEqualTo(const MathVector& other) const
+{
+
+	return !isEqualTo(other);
+}
+bool MathVector::isNotEqualTo(const std::initializer_list<double> arr) const
+{
+	unsigned int opSize = this->getOperationSize();
+	if (opSize != arr.size()) return true;
+
+	std::initializer_list<double>::iterator itr = arr.begin();
+	for (unsigned int i = 0; i < opSize; ++i)
+	{
+		if (data_[i] != *itr) return true;
+		++itr;
+	}
+	return false;
 }
 
 unsigned int MathVector::getOperationSize() const
@@ -333,6 +365,21 @@ bool operator==(const MathVector& v1, const MathVector& v2)
 	return v1.isEqualTo(v2);
 }
 
+bool operator==(const MathVector& v1, std::initializer_list<double> arr)
+{
+	return v1.isEqualTo(arr);
+}
+
+bool operator!=(const MathVector& v1, const MathVector& v2)
+{
+	return v1.isNotEqualTo(v2);
+}
+
+bool operator!=(const MathVector& v1, std::initializer_list<double> arr)
+{
+	return v1.isNotEqualTo(arr);
+}
+
 MathVector add(const MathVector& v1, const MathVector& v2)
 {
 	MathVector newVec(v1);
@@ -342,6 +389,8 @@ MathVector add(const MathVector& v1, const MathVector& v2)
 }
 MathVector operator+(const MathVector& v1, const MathVector& v2)
 {
+	if (v1.getSize() != v2.getSize()) return MathVector();
+
 	MathVector newVec(v1);
 	newVec += v2;
 
@@ -356,6 +405,13 @@ MathVector scalarMult(const MathVector& vec, double alpha)
 	return newVec;
 }
 MathVector operator*(const MathVector& vec, double alpha)
+{
+	MathVector newVec(vec);
+	newVec *= alpha;
+
+	return newVec;
+}
+MathVector operator*(double alpha, const MathVector& vec)
 {
 	MathVector newVec(vec);
 	newVec *= alpha;

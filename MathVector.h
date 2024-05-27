@@ -34,6 +34,10 @@ public:
 	double& operator[](int index) const {return data_[index];}
 
 	bool isEqualTo(const MathVector& other) const;
+	bool isEqualTo(const std::initializer_list<double> arr) const;
+
+	bool isNotEqualTo(const MathVector& other) const;
+	bool isNotEqualTo(const std::initializer_list<double> arr) const;
 
 	bool isZeroVector() const;
 	double getMagnitude() const;
@@ -93,6 +97,7 @@ private:
 bool approxEqual(const double& d1, const double& d2);
 
 bool operator==(const MathVector& v1, const MathVector& v2);
+bool operator==(const MathVector& v1, std::initializer_list<double> arr);
 
 MathVector add(const MathVector& v1, const MathVector& v2);
 MathVector operator+(const MathVector& v1, const MathVector& v2);
@@ -100,6 +105,7 @@ MathVector operator+(const MathVector& v1, const MathVector& v2);
 
 MathVector scalarMult(const MathVector& vec, double alpha);
 MathVector operator*(const MathVector& vec, double alpha);
+MathVector operator*(double alpha, const MathVector& vec);
 
 double dotProduct(const MathVector& v1, const MathVector& v2);
 double operator*(const MathVector& v1, const MathVector& v2);
