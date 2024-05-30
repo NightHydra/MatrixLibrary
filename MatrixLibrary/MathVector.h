@@ -7,8 +7,6 @@
 #include "pch.h"
 #include "pch.cpp"
 
-
-
 class MathVector
 {
 
