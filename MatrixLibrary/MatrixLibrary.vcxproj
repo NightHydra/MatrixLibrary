@@ -144,11 +144,13 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="MathMatrix.h" />
+    <ClInclude Include="MathMatrixIterator.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="MathVector.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MathMatrix.cpp" />
+    <ClCompile Include="MathMatrixIterator.cpp" />
     <ClCompile Include="MathVector.cpp" />
     <ClCompile Include="MatrixLibrary.cpp" />
     <ClCompile Include="pch.cpp">

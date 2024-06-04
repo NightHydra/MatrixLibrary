@@ -21,7 +21,7 @@ MathMatrix::MathMatrix(unsigned int numRows, unsigned int numCols)
 	while (tempNumCols > 0)
 	{
 		preAlloc_ <<= 1;
-		numCols >>= 1;
+		tempNumCols >>= 1;
 	}
 
 	// Now allocate all the memory
@@ -128,7 +128,7 @@ bool MathMatrix::setVal(unsigned int row, unsigned int col, double valueToSetTo)
 	return true;
 }
 
-unsigned int MathMatrix::getNumRowsInOperationSize()
+unsigned int MathMatrix::getNumRowsInOperationSize() const
 {
 	if (useNonDefaultNumberOfRows_ == true)
 	{
@@ -140,7 +140,7 @@ unsigned int MathMatrix::getNumRowsInOperationSize()
 	}
 }
 
-unsigned int MathMatrix::getNumColsInOperationSize()
+unsigned int MathMatrix::getNumColsInOperationSize() const
 {
 	if (useNonDefaultNumberOfCols_ == true)
 	{
@@ -366,6 +366,89 @@ void MathMatrix::transpose()
 		// The space should be either a row or columnspace
 	}
 }
+
+MathMatrixIterator MathMatrix::rowBegin(unsigned int const row) const
+{
+	if (spaceToRepresentMatrixAs_ == ROWSPACE)
+	{
+		return MathMatrixIterator(vectorSpace_ + row, 0, spaceToRepresentMatrixAs_, ROWSPACE);
+	}
+	else
+	{
+		return MathMatrixIterator(vectorSpace_ + 0, row , spaceToRepresentMatrixAs_, ROWSPACE);
+	}
+}
+MathMatrixIterator MathMatrix::rowEnd(unsigned int const row) const
+{
+	unsigned int endCol = getNumColsInOperationSize();
+	if (spaceToRepresentMatrixAs_ == ROWSPACE)
+	{
+		return MathMatrixIterator(vectorSpace_ + row, endCol, spaceToRepresentMatrixAs_, ROWSPACE);
+	}
+	else
+	{
+		return MathMatrixIterator(vectorSpace_ + endCol, row, spaceToRepresentMatrixAs_, ROWSPACE);
+	}
+}
+MathMatrixIterator MathMatrix::colBegin(unsigned int const col) const
+{
+	if (spaceToRepresentMatrixAs_ == ROWSPACE)
+	{
+		return MathMatrixIterator(vectorSpace_ + 0, col, spaceToRepresentMatrixAs_, COLUMNSPACE);
+	}
+	else
+	{
+		return MathMatrixIterator(vectorSpace_ + col, 0, spaceToRepresentMatrixAs_, COLUMNSPACE);
+	}
+}
+MathMatrixIterator MathMatrix::colEnd(unsigned int const col) const
+{
+	unsigned int endRow = getNumColsInOperationSize();
+	if (spaceToRepresentMatrixAs_ == ROWSPACE)
+	{
+		return MathMatrixIterator(vectorSpace_ + endRow, col, spaceToRepresentMatrixAs_, COLUMNSPACE);
+	}
+	else
+	{
+		return MathMatrixIterator(vectorSpace_ + col, endRow, spaceToRepresentMatrixAs_, COLUMNSPACE);
+	}
+}
+
+
+//==================================================================================================
+// Outside of class functions that are still related to the class
+//=================================================================================================
+
+MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2)
+{
+	// Make a new matrix with the correct size
+
+	// However if the m1 is m x n the matrix m2 must have dimension n x p to be
+	//     a legal matrix multiplication
+	if (m1.getNumColsInOperationSize() != m2.getNumRowsInOperationSize())
+	{
+		return MathMatrix();
+	}
+	else
+	{
+		unsigned int numRowsInNewMatrix = m1.getNumRowsInOperationSize();
+		unsigned int numColsInNewMatrix = m2.getNumColsInOperationSize();
+		MathMatrix result(numRowsInNewMatrix, numColsInNewMatrix);
+
+		double dotProdRes;
+		for (unsigned int i = 0; i < numRowsInNewMatrix; ++i)
+		{
+			for (unsigned int j = 0; j < numColsInNewMatrix; ++j)
+			{
+				// M_i,j = row i of m1 * col j of m2
+				dotProdRes = dotProduct(m1.rowBegin(i), m1.rowEnd(i), m2.colBegin(j), m2.colEnd(j));
+				result.setVal(i, j, dotProdRes);
+			}
+		}
+		return result;
+	}
+}
+
 
 // Private helper functions for the class
 bool MathMatrix::isRowNumInOperationBounds(unsigned int rowNum)

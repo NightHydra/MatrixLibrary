@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "MathVector.h"
+#include "MathMatrixIterator.h"
 
 /**
  * @brief An enum to define the "dominant space" of the matrix.  This enum being
@@ -14,7 +15,10 @@
  *     but if the user wants slight performance enchancement, ie. (to adding a extra column)
  *     or being able to extract and entire column the user may want to specify this value.
  */
-typedef enum { ROWSPACE, COLUMNSPACE } vector_space_t;
+#ifndef VECTOR_SPACE_ENUM_DEFINED_
+	typedef enum { ROWSPACE, COLUMNSPACE } vector_space_t;
+#define VECTOR_SPACE_ENUM_DEFINED_
+#endif
 
 /**
  * @brief A class used to represent mathematical matrices
@@ -34,8 +38,11 @@ public:
 	double getVal(unsigned int row, unsigned int col) const;
 	bool setVal(unsigned int row, unsigned int col, double valueToSetTo) const;
 
-	unsigned int getNumRowsInOperationSize();
-	unsigned int getNumColsInOperationSize();
+	unsigned int getNumRows() const { return numRows_; }
+	unsigned int getNumCols() const { return numCols_; }
+
+	unsigned int getNumRowsInOperationSize() const;
+	unsigned int getNumColsInOperationSize() const;
 
 	// Math related operations
 	
@@ -48,6 +55,16 @@ public:
 	bool multiplyRowByConstant(unsigned int row, double constant);
 
 	void transpose();
+
+	// Iterator functions
+	typedef MathMatrixIterator rowIterator;
+	typedef MathMatrixIterator colIterator;
+
+	MathMatrixIterator rowBegin(unsigned int const row) const;
+	MathMatrixIterator rowEnd(unsigned int const row) const;
+	MathMatrixIterator colBegin(unsigned int const col) const;
+	MathMatrixIterator colEnd(unsigned int const col) const;
+
 
 
 private:
@@ -86,4 +103,8 @@ private:
 	bool useNonDefaultNumberOfCols_ = false;
 
 };
+
+MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2);
+
+
 

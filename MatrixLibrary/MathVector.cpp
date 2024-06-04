@@ -296,7 +296,7 @@ double MathVector::dotProduct(const MathVector& other) const
 	double result = 0.0;
 	for (unsigned int i = 0; i < getOperationSize(); ++i)
 	{
-		result = data_[i] * other.data_[i];
+		result += data_[i] * other.data_[i];
 	}
 	return result;
 
