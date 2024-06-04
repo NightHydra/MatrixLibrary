@@ -435,6 +435,7 @@ MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2)
 		unsigned int numColsInNewMatrix = m2.getNumColsInOperationSize();
 		MathMatrix result(numRowsInNewMatrix, numColsInNewMatrix);
 
+		// The result of the dot product
 		double dotProdRes;
 		for (unsigned int i = 0; i < numRowsInNewMatrix; ++i)
 		{
