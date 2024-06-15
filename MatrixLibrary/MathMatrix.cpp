@@ -10,6 +10,7 @@ MathMatrix::MathMatrix(unsigned int numRows, unsigned int numCols)
 
 	if (numRows == 0 || numCols == 0)
 	{
+		numRows_ = numCols_ = 0;
 		// No need to allocate anything so just return without
 		//     allocating any memory
 		return;
@@ -34,6 +35,71 @@ MathMatrix::MathMatrix(unsigned int numRows, unsigned int numCols)
 	}
 }
 
+MathMatrix::MathMatrix(const MathVector& v, vector_space_t spaceOfVector)
+{
+	unsigned int vSize = v.getOperationSize();
+
+	if (vSize == 0)
+	{
+		numRows_ = numCols_ = 0;
+		return;
+	}
+	
+	numRows_ = 1;
+	numCols_ = vSize;
+
+	if (spaceOfVector == COLUMNSPACE)
+	{
+		numRows_ = numCols_;
+		numCols_ = 1;
+	}
+
+	preAlloc_ = pow2Above(vSize);
+
+	vectorSpace_ = new MathVector* [preAlloc_];
+
+	// We actually need to construct this and not just use the reference
+	vectorSpace_[0] = new MathVector(v);
+}
+
+/**
+ * @brief Constructor that takes in two vectors and returns the matrix resulting from
+ *     @ref colVector * @ref rowVector.  The resulting matrix is of size m x p where m is the
+ *     size of @ref colVector and p is the size of @ref rowVector
+ * @param colVector is the column vector to multiply with
+ * @param rowVector is the row vector to multiply with
+ */
+MathMatrix::MathMatrix(const MathVector& colVector, const MathVector& rowVector)
+{
+	numRows_ = colVector.getOperationSize();
+	numCols_ = rowVector.getOperationSize();
+
+	if (numRows_ == 0 || numCols_ == 0)
+	{
+		numRows_ = numCols_ = 0;
+		return;
+	}
+
+	preAlloc_ = pow2Above(numCols_);
+
+	// Allocate the matrix
+	vectorSpace_ = new MathVector * [preAlloc_];
+
+	for (unsigned int i = 0; i < numCols_; ++i)
+	{
+		vectorSpace_[i] = new MathVector(numRows_);
+	}
+
+	// Now actually plug in the values
+	for (unsigned int col = 0; col < numCols_; ++col)
+	{
+		for (unsigned int row = 0; row < numRows_; ++row)
+		{
+			vectorSpace_[col][row] = colVector[row] * rowVector[col];
+		}
+	}
+}
+
 MathMatrix::MathMatrix(const MathMatrix& other)
 {
 	copy(other);
@@ -45,52 +111,61 @@ MathMatrix& MathMatrix::operator=(const MathMatrix& other)
 	return *this;
 }
 
-void MathMatrix::cleanUpDynamicallyAllocatedMemory()
+MathMatrix::MathMatrix(const std::initializer_list < std::initializer_list<double>> list2d)
 {
-	unsigned int numToDelete = numCols_;
-	if (spaceToRepresentMatrixAs_ == ROWSPACE)
-	{
-		numToDelete = numRows_;
-	}
-
-	for (unsigned int i = 0; i < numToDelete; ++i)
-	{
-		delete vectorSpace_[i];
-	}
-	delete vectorSpace_;
+	makeMatrixFromInitLists(list2d);
+}
+MathMatrix& MathMatrix::operator=(const std::initializer_list < std::initializer_list<double>> list2d)
+{
+	cleanUpDynamicallyAllocatedMemory();
+	makeMatrixFromInitLists(list2d);
+	return (*this);
 }
 
-void MathMatrix::copy(const MathMatrix& other)
+/**
+ * @brief Compares the matrix to 2d initializer lists.  Each inner initialzer list will be
+ *     treated as a row in the matrix to provide understandable comparisons
+ * @param other A 2d initializer list representing the matrix to compare with
+ * @return true if the rows of the matrix are equal to the initalizer list
+ */
+bool MathMatrix::equals(const std::initializer_list<std::initializer_list<double>>& other)
 {
-	this->spaceToRepresentMatrixAs_ = other.spaceToRepresentMatrixAs_;
-	this->numRows_ = other.numRows_;
-	this->numCols_ = other.numCols_;
+	if (getNumRowsInOperationSize() != other.size()) return false;
 
-	this->preAlloc_ = other.preAlloc_;
+	unsigned int r = 0;
+	unsigned int c = 0;
 
-	this->numRowsSeenInOperations_ = other.numRowsSeenInOperations_;
-	this->numColsSeenInOperations_ = other.numColsSeenInOperations_;
-	this->useNonDefaultNumberOfRows_ = other.useNonDefaultNumberOfRows_;
-	this->useNonDefaultNumberOfCols_ = other.useNonDefaultNumberOfCols_;
-
-	// Now copy the dynamically allocated memory portion
-	vectorSpace_ = new MathVector*[preAlloc_];
-
-	unsigned int numVectorsToCopy = numCols_;
-	if (spaceToRepresentMatrixAs_ == ROWSPACE)
+	unsigned int* firstAccess = &r;
+	unsigned int* secondAccess = &c;
+	if (spaceToRepresentMatrixAs_ == COLUMNSPACE)
 	{
-		numVectorsToCopy = numRows_;
+		firstAccess = &c;
+		secondAccess = &r;
 	}
 
-	for (unsigned int i = 0; i < numVectorsToCopy; ++i)
+	unsigned int numColsInOp = getNumColsInOperationSize();
+
+	for (std::initializer_list<std::initializer_list<double>>::const_iterator rowItr = other.begin();
+		rowItr != other.end(); ++rowItr)
 	{
-		vectorSpace_[i] = new MathVector(*other.vectorSpace_[i]);
+		if (rowItr->size() != numColsInOp)
+		{
+			return false;
+		}
+
+		c = 0;
+		std::initializer_list<double>::const_iterator colItrEnd = rowItr->end();
+		for (std::initializer_list<double>::const_iterator indItr = rowItr->begin(); indItr != colItrEnd; ++indItr)
+		{
+			if (*indItr != (*vectorSpace_[*firstAccess])[*secondAccess])
+			{
+				return false;
+			}
+			++c;
+		}
+		++r;
 	}
-	// Set the others to nullptrs
-	for (unsigned int i = numVectorsToCopy; i < preAlloc_; ++i)
-	{
-		vectorSpace_[i] = nullptr;
-	}
+	return true;
 }
 
 // Programming related helper functions
@@ -452,6 +527,55 @@ MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2)
 
 
 // Private helper functions for the class
+
+void MathMatrix::cleanUpDynamicallyAllocatedMemory()
+{
+	unsigned int numToDelete = numCols_;
+	if (spaceToRepresentMatrixAs_ == ROWSPACE)
+	{
+		numToDelete = numRows_;
+	}
+
+	for (unsigned int i = 0; i < numToDelete; ++i)
+	{
+		delete vectorSpace_[i];
+	}
+	delete vectorSpace_;
+}
+
+void MathMatrix::copy(const MathMatrix& other)
+{
+	this->spaceToRepresentMatrixAs_ = other.spaceToRepresentMatrixAs_;
+	this->numRows_ = other.numRows_;
+	this->numCols_ = other.numCols_;
+
+	this->preAlloc_ = other.preAlloc_;
+
+	this->numRowsSeenInOperations_ = other.numRowsSeenInOperations_;
+	this->numColsSeenInOperations_ = other.numColsSeenInOperations_;
+	this->useNonDefaultNumberOfRows_ = other.useNonDefaultNumberOfRows_;
+	this->useNonDefaultNumberOfCols_ = other.useNonDefaultNumberOfCols_;
+
+	// Now copy the dynamically allocated memory portion
+	vectorSpace_ = new MathVector * [preAlloc_];
+
+	unsigned int numVectorsToCopy = numCols_;
+	if (spaceToRepresentMatrixAs_ == ROWSPACE)
+	{
+		numVectorsToCopy = numRows_;
+	}
+
+	for (unsigned int i = 0; i < numVectorsToCopy; ++i)
+	{
+		vectorSpace_[i] = new MathVector(*other.vectorSpace_[i]);
+	}
+	// Set the others to nullptrs
+	for (unsigned int i = numVectorsToCopy; i < preAlloc_; ++i)
+	{
+		vectorSpace_[i] = nullptr;
+	}
+}
+
 bool MathMatrix::isRowNumInOperationBounds(unsigned int rowNum)
 {
 	return (rowNum > 0) && (rowNum < getNumRowsInOperationSize());
@@ -460,3 +584,66 @@ bool MathMatrix::isColNumInOperationBounds(unsigned int colNum)
 {
 	return (colNum > 0) && (colNum < getNumColsInOperationSize());
 }
+
+void MathMatrix::makeMatrixFromInitLists(const std::initializer_list<std::initializer_list<double>>& list2d)
+{
+	if (list2d.size() == 0)
+	{
+		return;
+	}
+
+	std::initializer_list<std::initializer_list<double>>::const_iterator itr = list2d.begin();
+
+	unsigned int numColsInMatrix = itr->size();
+	++itr;
+
+	for (itr; itr != list2d.end(); ++itr)
+	{
+		if (itr->size() != numColsInMatrix)
+		{
+			return;
+		}
+	}
+
+	numRows_ = list2d.size();
+	numCols_ = numColsInMatrix;
+
+	preAlloc_ = 0x01;
+
+	unsigned int tempNumCols = numCols_;
+	while (tempNumCols > 0)
+	{
+		preAlloc_ <<= 1;
+		tempNumCols >>= 1;
+	}
+
+	// Now allocate all the memory
+	vectorSpace_ = new MathVector * [preAlloc_];
+
+
+	for (unsigned int i = 0; i < numCols_; ++i)
+	{
+		vectorSpace_[i] = new MathVector(numRows_);
+	}
+
+	// Fill in the matrix
+
+	unsigned int r = 0;
+	unsigned int c = 0;
+
+
+	for (std::initializer_list<std::initializer_list<double>>::iterator rowItr = list2d.begin();
+		rowItr != list2d.end(); ++rowItr)
+	{
+		std::initializer_list<double>::iterator colEndItr = rowItr->end();
+		c = 0;
+		for (std::initializer_list<double>::iterator indexItr = rowItr->begin(); indexItr != colEndItr; ++indexItr)
+		{
+			(*vectorSpace_[c])[r] = *indexItr;
+			++c;
+		}
+		++r;
+	}
+}
+
+

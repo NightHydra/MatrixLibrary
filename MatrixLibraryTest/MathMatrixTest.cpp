@@ -12,6 +12,16 @@ namespace MATRIX_LIBRARY_TESTS {
 		EXPECT_EQ(m.getNumCols(), 0);
 	}
 
+	TEST(BasicConstructorTests, CAN_CONSTRUCT_MATRIX_FROM_INITIALIZER_LIST)
+	{
+		MathMatrix m = { {4, 5}, {6, 7} };
+
+		EXPECT_EQ(m.getVal(0, 0), 4);
+		EXPECT_EQ(m.getVal(0, 1), 5);
+		EXPECT_EQ(m.getVal(1, 0), 6);
+		EXPECT_EQ(m.getVal(1, 1), 7);
+	}
+
 	TEST(MathMatrixIteratorTests, SUBTRACTION_ON_ITERATORS_WORKS_CORRECTLY)
 	{
 		MathMatrix m(4, 4);
@@ -20,6 +30,13 @@ namespace MATRIX_LIBRARY_TESTS {
 		MathMatrix::rowIterator endItr = m.rowEnd(1);
 
 		EXPECT_EQ(endItr - startItr, 4);
+	}
+
+	TEST(ComparisonOperatorTests, OPERATOR_COMPARISON_WORKS_AS_INTENDED)
+	{
+		MathMatrix m({ {4, 5, 7}, { 3, 7, 2 }, { 9, 3, 1 }});
+
+		EXPECT_TRUE( (m.equals( { {4, 5, 7}, { 3, 7, 2 }, { 9, 3, 1 }} ) ) );
 	}
 
 	TEST(DotProductWithIterators, ITERATORS_ON_A_2x2_MATRIX_WORKS)

@@ -29,9 +29,14 @@ public:
 
 	MathMatrix();
 	MathMatrix(unsigned int numRows, unsigned int numCols);
+	MathMatrix(const MathVector& v, vector_space_t spaceOfVector);
+	MathMatrix(const MathVector& colVector, const MathVector& rowVector);
 	~MathMatrix() { cleanUpDynamicallyAllocatedMemory(); }
 	MathMatrix(const MathMatrix& other);
 	MathMatrix& operator=(const MathMatrix& other);
+
+	MathMatrix(const std::initializer_list < std::initializer_list<double>> list2d);
+	MathMatrix& operator=(const std::initializer_list < std::initializer_list<double>> list2d);
 
 	// Programming related helper functions
 
@@ -43,6 +48,8 @@ public:
 
 	unsigned int getNumRowsInOperationSize() const;
 	unsigned int getNumColsInOperationSize() const;
+
+	bool equals(const std::initializer_list<std::initializer_list<double>>& other);
 
 	// Math related operations
 	
@@ -68,6 +75,9 @@ public:
 
 
 private:
+
+	void makeMatrixFromInitLists(const std::initializer_list<std::initializer_list<double>>& list2d);
+
 	// Dynamically Allocated Memory Helper Functions
 	void cleanUpDynamicallyAllocatedMemory();
 	void copy(const MathMatrix& other);
@@ -105,6 +115,5 @@ private:
 };
 
 MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2);
-
 
 

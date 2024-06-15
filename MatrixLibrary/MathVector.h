@@ -7,6 +7,22 @@
 #include "pch.h"
 #include "pch.cpp"
 
+/**
+ * @brief Finds the power of 2 greater than to n
+ * @param n 
+ * @return 
+ */
+unsigned int pow2Above(unsigned int n)
+{
+	unsigned int ret = 1;
+	while (n >= 1)
+	{
+		n >>= 1;
+		ret <<= 1;
+	}
+	return ret;
+}
+
 class MathVector
 {
 
