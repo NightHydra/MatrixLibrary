@@ -49,12 +49,17 @@ public:
 	unsigned int getNumRowsInOperationSize() const;
 	unsigned int getNumColsInOperationSize() const;
 
-	bool equals(const std::initializer_list<std::initializer_list<double>>& other);
+	bool equals(const std::initializer_list<std::initializer_list<double>>& other) const;
+
+	bool addRow(const MathVector& rowToAdd);
+	bool addCol(const MathVector& rowToCol);
 
 	// Math related operations
 	
 	bool swapRows(unsigned int rowNum1, unsigned int rowNum2);
 	bool swapCols(unsigned int colNum1, unsigned int colNum2);
+
+
 
 	bool addMultipleOfRow(unsigned int rowNumToAddTo, unsigned int rowNumToAdd,
 		double multiple);
@@ -85,6 +90,8 @@ private:
 	bool isRowNumInOperationBounds(unsigned int rowNum);
 	bool isColNumInOperationBounds(unsigned int colNum);
 
+	bool addMathVectorToEndsOfEachVector(const MathVector& v);
+	void addMathVectorToSameSpace(const MathVector& v);
 	/**
 	 * @brief The dominant space of the matrix.  By defult the matrix
 	 *     is represented as column vectors.
@@ -103,6 +110,7 @@ private:
 	 *     vectors that form the matrix.
 	 */
 	MathVector** vectorSpace_ = nullptr;
+	unsigned int numVectorsInVectorSpace_;
 
 	unsigned int preAlloc_ = 0;
 

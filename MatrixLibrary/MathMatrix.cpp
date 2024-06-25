@@ -8,9 +8,13 @@ MathMatrix::MathMatrix(unsigned int numRows, unsigned int numCols)
 	numRows_ = numRows;
 	numCols_ = numCols;
 
+	// Since we are defaulting to column space we assume this
+	numVectorsInSpace_ = numCols;
+
 	if (numRows == 0 || numCols == 0)
 	{
 		numRows_ = numCols_ = 0;
+		numVectorsInSpace_ = 0;
 		// No need to allocate anything so just return without
 		//     allocating any memory
 		return;
@@ -39,9 +43,11 @@ MathMatrix::MathMatrix(const MathVector& v, vector_space_t spaceOfVector)
 {
 	unsigned int vSize = v.getOperationSize();
 
+	spaceToRepresentMatrixAs_ = spaceOfVector;
+
 	if (vSize == 0)
 	{
-		numRows_ = numCols_ = 0;
+		numRows_ = numCols_ = numVectorsInSpace_ = 0;
 		return;
 	}
 	
@@ -50,11 +56,14 @@ MathMatrix::MathMatrix(const MathVector& v, vector_space_t spaceOfVector)
 
 	if (spaceOfVector == COLUMNSPACE)
 	{
-		numRows_ = numCols_;
+		numRows_ = vSize;
 		numCols_ = 1;
 	}
 
-	preAlloc_ = pow2Above(vSize);
+	numVectorsInSpace_ = 1;
+	
+	// Make it two so we can add another vector easily
+	preAlloc_ = 2;
 
 	vectorSpace_ = new MathVector* [preAlloc_];
 
@@ -73,16 +82,21 @@ MathMatrix::MathMatrix(const MathVector& colVector, const MathVector& rowVector)
 {
 	numRows_ = colVector.getOperationSize();
 	numCols_ = rowVector.getOperationSize();
+	numVectorsInSpace_ = numCols_;
 
 	if (numRows_ == 0 || numCols_ == 0)
 	{
-		numRows_ = numCols_ = 0;
+		numRows_ = numCols_ = numVectorsInSpace_ = 0;
 		return;
 	}
 
+	// @todo Add a part of this function where a user can choose the space
+	spaceToRepresentMatrixAs_ = COLUMNSPACE;
+	
 	preAlloc_ = pow2Above(numCols_);
 
 	// Allocate the matrix
+	numVectorsInSpace_ = numCols_;
 	vectorSpace_ = new MathVector * [preAlloc_];
 
 	for (unsigned int i = 0; i < numCols_; ++i)
@@ -128,7 +142,7 @@ MathMatrix& MathMatrix::operator=(const std::initializer_list < std::initializer
  * @param other A 2d initializer list representing the matrix to compare with
  * @return true if the rows of the matrix are equal to the initalizer list
  */
-bool MathMatrix::equals(const std::initializer_list<std::initializer_list<double>>& other)
+bool MathMatrix::equals(const std::initializer_list<std::initializer_list<double>>& other) const
 {
 	if (getNumRowsInOperationSize() != other.size()) return false;
 
@@ -227,7 +241,21 @@ unsigned int MathMatrix::getNumColsInOperationSize() const
 	}
 }
 
+bool MathMatrix::addRow(const MathVector& rowToAdd)
+{
+	bool vectorSuccessfullyAdded = false;
+
+	if (spaceToRepresentMatrixAs_ == ROWSPACE)
+	{
+		vectorSuccessfullyAdded = addMathVectorToSameSpace(rowToAdd);
+	}
+}
+
+bool MathMatrix::addCol(const MathVector& rowToCol);
+
+//======================================================================
 // Math related operations
+//======================================================================
 
 bool MathMatrix::swapRows(unsigned int rowNum1, unsigned int rowNum2)
 {
@@ -546,6 +574,7 @@ void MathMatrix::cleanUpDynamicallyAllocatedMemory()
 void MathMatrix::copy(const MathMatrix& other)
 {
 	this->spaceToRepresentMatrixAs_ = other.spaceToRepresentMatrixAs_;
+	this->numVectorsInVectorSpace_ = other.numVectorsInVectorSpace_;
 	this->numRows_ = other.numRows_;
 	this->numCols_ = other.numCols_;
 
@@ -583,6 +612,48 @@ bool MathMatrix::isRowNumInOperationBounds(unsigned int rowNum)
 bool MathMatrix::isColNumInOperationBounds(unsigned int colNum)
 {
 	return (colNum > 0) && (colNum < getNumColsInOperationSize());
+}
+
+/**
+ * @brief Adds each element in v to the end of each vector made up in the space of the matrix
+ * @param v is the vector to add.
+ * @note This private member function provides no bounds check as it does not care about whether or not
+ *     the matrix is represented as a row space or a column space
+ */
+bool MathMatrix::addMathVectorToEndsOfEachVector(const MathVector& v)
+{
+	unsigned int sizeOfOtherMathVector = v.getOperationSize();
+	for (unsigned int i = 0; i < sizeOfOtherMathVector; ++i)
+	{
+		vectorSpace_[i]->push_back(v[i]);
+	}
+	return true;
+}
+
+/**
+ * @brief Adds a @ref MathVector to the space of the matrix.  This also updates
+ *     @ref numVectorsInVectorSpace_ but DOES NOT UPDATE @ref numRows or @ref numCols
+ * @param v is the vector to add to the main space
+ */
+bool MathMatrix::addMathVectorToSameSpace(const MathVector& v)
+{
+	if (numVectorsInVectorSpace_ >= preAlloc_)
+	{
+		// Now we need to copy everything over
+		preAlloc_ <<= 1;
+
+		MathVector** newSpace = new MathVector * [preAlloc_];
+		
+		for (unsigned int i = 0; i < numVectorsInVectorSpace_; ++i)
+		{
+			newSpace[i] = vectorSpace_[i];
+		}
+		// Dont delete the previous vectors though since only the pointer is copied
+		delete[] vectorSpace_;
+		vectorSpace_ = newSpace;
+	}
+
+	vectorSpace_[numVectorsInVectorSpace_++] = new MathVector(v);
 }
 
 void MathMatrix::makeMatrixFromInitLists(const std::initializer_list<std::initializer_list<double>>& list2d)
