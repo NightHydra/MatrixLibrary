@@ -1,27 +1,13 @@
 #pragma once
 
-#ifndef __MATRIX_LIBRARY_H
-#define __MATRIX_LIBRARY_H
+#ifndef __MATH_VECTOR_H
+#define __MATH_VECTOR_H__
 #include <initializer_list>
 
 #include "pch.h"
 #include "pch.cpp"
 
-/**
- * @brief Finds the power of 2 greater than to n
- * @param n 
- * @return 
- */
-unsigned int pow2Above(unsigned int n)
-{
-	unsigned int ret = 1;
-	while (n >= 1)
-	{
-		n >>= 1;
-		ret <<= 1;
-	}
-	return ret;
-}
+unsigned int pow2Above(unsigned int n);
 
 class MathVector
 {
@@ -127,4 +113,4 @@ double operator*(const MathVector& v1, const MathVector& v2);
 MathVector findProjection(const MathVector& b, const MathVector& a);
 
 
-#endif // __MATRIX_LIBARY_H
+#endif // __MATH_VECTOR_H

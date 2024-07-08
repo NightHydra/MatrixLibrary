@@ -5,6 +5,22 @@
 
 static constexpr double ALPHA = 0.001;
 
+/**
+ * @brief Finds the power of 2 greater than to n
+ * @param n
+ * @return
+ */
+unsigned int pow2Above(unsigned int n)
+{
+	unsigned int ret = 1;
+	while (n >= 1)
+	{
+		n >>= 1;
+		ret <<= 1;
+	}
+	return ret;
+}
+
 MathVector::MathVector()
 {
 	size_ = 0;
@@ -43,7 +59,7 @@ MathVector::MathVector(unsigned int size)
 
 MathVector::MathVector(const std::initializer_list<double> arr)
 {
-	size_ = arr.size();
+	size_ = (unsigned int) arr.size();
 	preAlloc_ = 2;
 
 	while (preAlloc_ < size_)
@@ -65,7 +81,7 @@ MathVector& MathVector::operator=(const std::initializer_list<double> arr)
 {
 	deleteAllocatedMemory();
 
-	size_ = arr.size();
+	size_ = (unsigned int) arr.size();
 	preAlloc_ = 2;
 
 	while (preAlloc_ < size_)

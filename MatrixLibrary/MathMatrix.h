@@ -1,4 +1,8 @@
 #pragma once
+
+#ifndef __MATH_MATRIX_H
+#define __MATH_MATRIX_H
+
 #include "pch.h"
 #include "MathVector.h"
 #include "MathMatrixIterator.h"
@@ -90,8 +94,8 @@ private:
 	bool isRowNumInOperationBounds(unsigned int rowNum);
 	bool isColNumInOperationBounds(unsigned int colNum);
 
-	bool addMathVectorToEndsOfEachVector(const MathVector& v);
-	void addMathVectorToSameSpace(const MathVector& v);
+	bool addMathVectorToEndsOfEachVector(const MathVector& v, unsigned int& mainSpaceSize);
+	bool addMathVectorToSameSpace(const MathVector& v, unsigned int& mainSpaceSize);
 	/**
 	 * @brief The dominant space of the matrix.  By defult the matrix
 	 *     is represented as column vectors.
@@ -110,7 +114,6 @@ private:
 	 *     vectors that form the matrix.
 	 */
 	MathVector** vectorSpace_ = nullptr;
-	unsigned int numVectorsInVectorSpace_;
 
 	unsigned int preAlloc_ = 0;
 
@@ -123,5 +126,7 @@ private:
 };
 
 MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2);
+
+#endif // __MATH_MATRIX_H
 
 
