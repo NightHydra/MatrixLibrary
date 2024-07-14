@@ -94,8 +94,10 @@ private:
 	bool isRowNumInOperationBounds(unsigned int rowNum);
 	bool isColNumInOperationBounds(unsigned int colNum);
 
-	bool addMathVectorToEndsOfEachVector(const MathVector& v, unsigned int& mainSpaceSize);
-	bool addMathVectorToSameSpace(const MathVector& v, unsigned int& mainSpaceSize);
+	bool addMathVectorToEndsOfEachVector(const MathVector& v, unsigned int const primarySpaceSize,
+		unsigned int & vectorSpaceSize);
+	bool addMathVectorToSameSpace(const MathVector& v, unsigned int & vectorSpaceSize,
+		unsigned int const numElementsInVectorOfSpace);
 	/**
 	 * @brief The dominant space of the matrix.  By defult the matrix
 	 *     is represented as column vectors.

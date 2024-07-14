@@ -22,6 +22,17 @@ namespace MATRIX_LIBRARY_TESTS {
 		EXPECT_EQ(m.getVal(1, 1), 7);
 	}
 
+	TEST(AddingRowColumnsTest, SUCCESSFULLY_ADDS_ROW_TO_MATRIX)
+	{
+		MathMatrix m = { {7.8, 4.5}, {3.6, -2} };
+
+		MathVector rowToAdd = { -6.5, 12 };
+
+		m.addRow(rowToAdd);
+		EXPECT_TRUE(m.equals({ { 7.8, 4.5 }, { 3.6, -2 }, { -6.5, 12 } }));
+
+	}
+
 	TEST(MathMatrixIteratorTests, SUBTRACTION_ON_ITERATORS_WORKS_CORRECTLY)
 	{
 		MathMatrix m(4, 4);

@@ -239,11 +239,11 @@ bool MathMatrix::addRow(const MathVector& rowToAdd)
 
 	if (spaceToRepresentMatrixAs_ == ROWSPACE)
 	{
-		vectorSuccessfullyAdded = addMathVectorToSameSpace(rowToAdd, numRows_);
+		vectorSuccessfullyAdded = addMathVectorToSameSpace(rowToAdd, numRows_, numCols_);
 	}
 	else if (spaceToRepresentMatrixAs_ == COLUMNSPACE)
 	{
-		vectorSuccessfullyAdded = addMathVectorToEndsOfEachVector(rowToAdd, numRows_);
+		vectorSuccessfullyAdded = addMathVectorToEndsOfEachVector(rowToAdd, numCols_, numRows_);
 	}
 	else
 	{
@@ -259,11 +259,11 @@ bool MathMatrix::addCol(const MathVector& colToAdd)
 
 	if (spaceToRepresentMatrixAs_ == ROWSPACE)
 	{
-		vectorSuccessfullyAdded = addMathVectorToSameSpace(colToAdd, numCols_);
+		vectorSuccessfullyAdded = addMathVectorToSameSpace(colToAdd, numRows_, numCols_);
 	}
 	else if (spaceToRepresentMatrixAs_ == COLUMNSPACE)
 	{
-		vectorSuccessfullyAdded = addMathVectorToEndsOfEachVector(colToAdd, numCols_);
+		vectorSuccessfullyAdded = addMathVectorToEndsOfEachVector(colToAdd, numCols_, numRows_);
 	}
 	else
 	{
@@ -640,12 +640,13 @@ bool MathMatrix::isColNumInOperationBounds(unsigned int colNum)
  * @note This private member function provides no bounds check as it does not care about whether or not
  *     the matrix is represented as a row space or a column space
  */
-bool MathMatrix::addMathVectorToEndsOfEachVector(const MathVector& v, unsigned int& innerSpaceSize)
+bool MathMatrix::addMathVectorToEndsOfEachVector(const MathVector& v, unsigned int const vectorSpaceSize,
+	unsigned int & numElementsInVectorOfSpace)
 {
 	unsigned int sizeOfOtherMathVector = v.getOperationSize();
 	
 	// We are trying to add a row/column that is an invalid size
-	if (sizeOfOtherMathVector != innerSpaceSize)
+	if (sizeOfOtherMathVector != vectorSpaceSize)
 	{
 		return false;
 	}
@@ -654,6 +655,7 @@ bool MathMatrix::addMathVectorToEndsOfEachVector(const MathVector& v, unsigned i
 	{
 		vectorSpace_[i]->push_back(v[i]);
 	}
+	++numElementsInVectorOfSpace;
 	return true;
 }
 
@@ -661,14 +663,16 @@ bool MathMatrix::addMathVectorToEndsOfEachVector(const MathVector& v, unsigned i
  * @brief Adds a @ref MathVector to the space of the matrix.  This function
  *     DOES NOT UPDATE @ref numRows or @ref numCols
  * @param v is the vector to add to the main space
- * @param spaceSize[in, out] is the size of the main space to which the vector is added.  This variable
+ * @param mainSpaceSize[in, out] is the size of the main space to which the vector is added.  This variable
  *     will be updated if the size of that space changes
  */
-bool MathMatrix::addMathVectorToSameSpace(const MathVector& v, unsigned int& mainSpaceSize)
+bool MathMatrix::addMathVectorToSameSpace(const MathVector& v, unsigned int & vectorSpaceSize,
+	unsigned int numElementsInVectorOfSpace)
 {
-	if (mainSpaceSize >= preAlloc_)
+	if (vectorSpaceSize >= preAlloc_)
 	{
-		if (mainSpaceSize > ~0)
+		// A fancy way of checking for overflow
+		if (vectorSpaceSize == (0x01 << (sizeof(vectorSpaceSize)-1)) )
 		{
 			return false;
 		}
@@ -677,7 +681,7 @@ bool MathMatrix::addMathVectorToSameSpace(const MathVector& v, unsigned int& mai
 
 		MathVector** newSpace = new MathVector * [preAlloc_];
 		
-		for (unsigned int i = 0; i < mainSpaceSize; ++i)
+		for (unsigned int i = 0; i < vectorSpaceSize; ++i)
 		{
 			newSpace[i] = vectorSpace_[i];
 		}
@@ -686,7 +690,7 @@ bool MathMatrix::addMathVectorToSameSpace(const MathVector& v, unsigned int& mai
 		vectorSpace_ = newSpace;
 	}
 
-	vectorSpace_[mainSpaceSize++] = new MathVector(v);
+	vectorSpace_[vectorSpaceSize++] = new MathVector(v);
 
 	return true;
 }
