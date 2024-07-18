@@ -53,6 +53,7 @@ public:
 	unsigned int getNumRowsInOperationSize() const;
 	unsigned int getNumColsInOperationSize() const;
 
+	bool equals(const MathMatrix& other) const;
 	bool equals(const std::initializer_list<std::initializer_list<double>>& other) const;
 
 	bool addRow(const MathVector& rowToAdd);
@@ -128,6 +129,8 @@ private:
 };
 
 MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2);
+
+MathMatrix createProjectionMatrix(const MathVector& vectorToFindProjectionMatrixOf);
 
 #endif // __MATH_MATRIX_H
 

@@ -348,4 +348,15 @@ namespace MATH_VECTOR_TESTS{
 		EXPECT_NEAR(allPos.dotProduct(allNeg), -31.3, 0.001);
 	}
 
+	//=======================================================================
+	// OUTSIDE OF CLASS HELPER FUNCTION TESTS
+	//=======================================================================
+	TEST(OutsideHelpersTests, POW_2_ABOVE_WORKS_AS_EXPECTED)
+	{
+		EXPECT_EQ(pow2Above(2), 4);
+		EXPECT_EQ(pow2Above(3), 4);
+		EXPECT_EQ(pow2Above(5), 8);
+		EXPECT_EQ(pow2Above(22), 32);
+	}
+
 }

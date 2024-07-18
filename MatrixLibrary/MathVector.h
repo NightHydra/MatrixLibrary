@@ -9,6 +9,8 @@
 
 unsigned int pow2Above(unsigned int n);
 
+bool approxEqual(const double& d1, const double& d2);
+
 class MathVector
 {
 
@@ -94,7 +96,7 @@ private:
 };
 
 // Outside of class functions that generate new vectors when used
-bool approxEqual(const double& d1, const double& d2);
+
 
 bool operator==(const MathVector& v1, const MathVector& v2);
 bool operator==(const MathVector& v1, std::initializer_list<double> arr);

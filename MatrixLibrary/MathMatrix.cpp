@@ -89,7 +89,7 @@ MathMatrix::MathMatrix(const MathVector& colVector, const MathVector& rowVector)
 	preAlloc_ = pow2Above(numCols_);
 
 	// Allocate the matrix
-	vectorSpace_ = new MathVector * [preAlloc_];
+	vectorSpace_ = new MathVector* [preAlloc_];
 
 	for (unsigned int i = 0; i < numCols_; ++i)
 	{
@@ -128,6 +128,20 @@ MathMatrix& MathMatrix::operator=(const std::initializer_list < std::initializer
 	return (*this);
 }
 
+
+bool MathMatrix::equals(const MathMatrix& other) const
+{
+	unsigned int m1NumberOfRows = this->getNumRowsInOperationSize();
+	unsigned int m2NumberOfRows = other.getNumRowsInOperationSize();
+	unsigned int m1NumberOfCols = this->getNumColsInOperationSize();
+	unsigned int m2NumberOfCols = other.getNumColsInOperationSize();
+
+	if ((m1NumberOfRows != m2NumberOfRows) || (m1NumberOfCols != m2NumberOfCols))
+	{
+		return false; // <--- RETURN FALSE SINCE SIZES DONT MATCH
+	}
+	return true;
+}
 /**
  * @brief Compares the matrix to 2d initializer lists.  Each inner initialzer list will be
  *     treated as a row in the matrix to provide understandable comparisons
@@ -163,7 +177,7 @@ bool MathMatrix::equals(const std::initializer_list<std::initializer_list<double
 		std::initializer_list<double>::const_iterator colItrEnd = rowItr->end();
 		for (std::initializer_list<double>::const_iterator indItr = rowItr->begin(); indItr != colItrEnd; ++indItr)
 		{
-			if (*indItr != (*vectorSpace_[*firstAccess])[*secondAccess])
+			if (!approxEqual(*indItr , (*vectorSpace_[*firstAccess])[*secondAccess]))
 			{
 				return false;
 			}
@@ -526,7 +540,7 @@ MathMatrixIterator MathMatrix::colBegin(unsigned int const col) const
 }
 MathMatrixIterator MathMatrix::colEnd(unsigned int const col) const
 {
-	unsigned int endRow = getNumColsInOperationSize();
+	unsigned int endRow = getNumRowsInOperationSize();
 	if (spaceToRepresentMatrixAs_ == ROWSPACE)
 	{
 		return MathMatrixIterator(vectorSpace_ + endRow, col, spaceToRepresentMatrixAs_, COLUMNSPACE);
@@ -573,8 +587,31 @@ MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2)
 	}
 }
 
+/**
+ * @brief This function finds the projection matrix of column vector @ref vectorToFindProjectionMatrixOf.
+ *     A projection matrix is a matrix that when multiplied by another vector results in a column vector
+ *     representing the point closest to that vector that is on the line represented by the vector that
+ *     created the projection matrix.
+ * @param vectorToFindProjectionMatrixOf Is the vector that we find the projection matrix of
+ * @return The projection matrix generated from the given vector
+ */
+MathMatrix createProjectionMatrix(const MathVector& vectorToFindProjectionMatrixOf)
+{
+	// Finding the dot product of the vector with itself
+	float dotProduct = vectorToFindProjectionMatrixOf.dotProduct(vectorToFindProjectionMatrixOf);
 
+	MathVector vectorDividedByScalar = (1 / dotProduct) * vectorToFindProjectionMatrixOf;
+
+	MathMatrix m(vectorToFindProjectionMatrixOf, vectorDividedByScalar);
+
+	return m;
+}
+
+
+
+//==================================================================================================
 // Private helper functions for the class
+//=================================================================================================
 
 void MathMatrix::cleanUpDynamicallyAllocatedMemory()
 {
@@ -658,6 +695,7 @@ bool MathMatrix::addMathVectorToEndsOfEachVector(const MathVector& v, unsigned i
 	++numElementsInVectorOfSpace;
 	return true;
 }
+
 
 /**
  * @brief Adds a @ref MathVector to the space of the matrix.  This function
@@ -755,5 +793,7 @@ void MathMatrix::makeMatrixFromInitLists(const std::initializer_list<std::initia
 		++r;
 	}
 }
+
+
 
 
