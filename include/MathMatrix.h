@@ -1,9 +1,6 @@
-#pragma once
+#ifndef __MATH_MATRIX_H__
+#define __MATH_MATRIX_H__
 
-#ifndef __MATH_MATRIX_H
-#define __MATH_MATRIX_H
-
-#include "pch.h"
 #include "MathVector.h"
 #include "MathMatrixIterator.h"
 

@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "MathMatrix.h"
 #include <cmath>
 

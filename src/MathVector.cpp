@@ -1,5 +1,3 @@
-#include "pch.h"
-#include "pch.cpp"
 #include <math.h>
 #include "MathVector.h"
 

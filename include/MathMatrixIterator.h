@@ -1,4 +1,6 @@
-#pragma once
+#ifndef MATH_MATRIX_ITERATOR_H__
+#define MATH_MATRIX_ITERATOR_H__
+
 #include "MathVector.h"
 
 // Predefintion of Mathmatrix
@@ -38,3 +40,4 @@ private:
 double dotProduct(MathMatrixIterator beginItr1, const MathMatrixIterator& endItr1,
 	MathMatrixIterator beginItr2, const MathMatrixIterator& endItr2);
 
+#endif

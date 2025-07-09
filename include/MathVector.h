@@ -1,11 +1,6 @@
-#pragma once
-
-#ifndef __MATH_VECTOR_H
+#ifndef __MATH_VECTOR_H__
 #define __MATH_VECTOR_H__
 #include <initializer_list>
-
-#include "pch.h"
-#include "pch.cpp"
 
 unsigned int pow2Above(unsigned int n);
 
