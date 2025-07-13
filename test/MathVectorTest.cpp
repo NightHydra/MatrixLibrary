@@ -1,6 +1,6 @@
-#include "pch.h"
+#include <gtest/gtest.h>
 
-#include "../MatrixLibrary/MathVector.h"
+#include "MatrixLibrary/matrix_library.h"
 #include <ostream>
 
 namespace MATH_VECTOR_TESTS{

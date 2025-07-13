@@ -19,7 +19,7 @@ public:
 
 	MathMatrixIterator operator++();
 	MathMatrixIterator operator++(int);
-	double& operator*();
+	double& operator*() const;
 
 	bool operator==(const MathMatrixIterator& other) const;
 

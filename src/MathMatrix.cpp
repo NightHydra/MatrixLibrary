@@ -1,7 +1,7 @@
 #include "MathMatrix.h"
 #include <cmath>
 
-MathMatrix::MathMatrix() {};
+MathMatrix::MathMatrix() = default;
 MathMatrix::MathMatrix(unsigned int numRows, unsigned int numCols)
 {
 	numRows_ = numRows;
@@ -111,6 +111,10 @@ MathMatrix::MathMatrix(const MathMatrix& other)
 }
 MathMatrix& MathMatrix::operator=(const MathMatrix& other)
 {
+	if (&other == this)
+	{
+		return *this;
+	}
 	cleanUpDynamicallyAllocatedMemory();
 	copy(other);
 	return *this;
@@ -597,7 +601,7 @@ MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2)
 MathMatrix createProjectionMatrix(const MathVector& vectorToFindProjectionMatrixOf)
 {
 	// Finding the dot product of the vector with itself
-	float dotProduct = vectorToFindProjectionMatrixOf.dotProduct(vectorToFindProjectionMatrixOf);
+	double dotProduct = vectorToFindProjectionMatrixOf.dotProduct(vectorToFindProjectionMatrixOf);
 
 	MathVector vectorDividedByScalar = (1 / dotProduct) * vectorToFindProjectionMatrixOf;
 
@@ -612,8 +616,7 @@ MathMatrix createProjectionMatrix(const MathVector& vectorToFindProjectionMatrix
 // Private helper functions for the class
 //=================================================================================================
 
-void MathMatrix::cleanUpDynamicallyAllocatedMemory()
-{
+void MathMatrix::cleanUpDynamicallyAllocatedMemory() const {
 	unsigned int numToDelete = numCols_;
 	if (spaceToRepresentMatrixAs_ == ROWSPACE)
 	{
@@ -660,11 +663,11 @@ void MathMatrix::copy(const MathMatrix& other)
 	}
 }
 
-bool MathMatrix::isRowNumInOperationBounds(unsigned int rowNum)
+bool MathMatrix::isRowNumInOperationBounds(unsigned int rowNum) const
 {
 	return (rowNum > 0) && (rowNum < getNumRowsInOperationSize());
 }
-bool MathMatrix::isColNumInOperationBounds(unsigned int colNum)
+bool MathMatrix::isColNumInOperationBounds(unsigned int colNum) const
 {
 	return (colNum > 0) && (colNum < getNumColsInOperationSize());
 }
@@ -700,7 +703,7 @@ bool MathMatrix::addMathVectorToEndsOfEachVector(const MathVector& v, unsigned i
  * @brief Adds a @ref MathVector to the space of the matrix.  This function
  *     DOES NOT UPDATE @ref numRows or @ref numCols
  * @param v is the vector to add to the main space
- * @param mainSpaceSize[in, out] is the size of the main space to which the vector is added.  This variable
+ * @param vectorSpaceSize[in, out] is the size of the main space to which the vector is added.  This variable
  *     will be updated if the size of that space changes
  */
 bool MathMatrix::addMathVectorToSameSpace(const MathVector& v, unsigned int & vectorSpaceSize,
@@ -722,7 +725,7 @@ bool MathMatrix::addMathVectorToSameSpace(const MathVector& v, unsigned int & ve
 		{
 			newSpace[i] = vectorSpace_[i];
 		}
-		// Dont delete the previous vectors though since only the pointer is copied
+		// Don't delete the previous vectors though since only the pointer is copied
 		delete[] vectorSpace_;
 		vectorSpace_ = newSpace;
 	}

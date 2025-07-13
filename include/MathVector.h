@@ -25,7 +25,7 @@ public:
 
 	~MathVector() { this->deleteAllocatedMemory(); }
 
-	// Inherantly an unsafe operator since it returns
+	// Inherently an unsafe operator since it returns
 	//     the reference to a variable but is useful for accessing
 	//     elements
 	double& operator[](int index) const {return data_[index];}
@@ -110,4 +110,4 @@ double operator*(const MathVector& v1, const MathVector& v2);
 MathVector findProjection(const MathVector& b, const MathVector& a);
 
 
-#endif // __MATH_VECTOR_H
+#endif // __MATH_VECTOR_H__

@@ -86,11 +86,11 @@ private:
 	void makeMatrixFromInitLists(const std::initializer_list<std::initializer_list<double>>& list2d);
 
 	// Dynamically Allocated Memory Helper Functions
-	void cleanUpDynamicallyAllocatedMemory();
+	void cleanUpDynamicallyAllocatedMemory() const;
 	void copy(const MathMatrix& other);
 
-	bool isRowNumInOperationBounds(unsigned int rowNum);
-	bool isColNumInOperationBounds(unsigned int colNum);
+	bool isRowNumInOperationBounds(unsigned int rowNum) const;
+	bool isColNumInOperationBounds(unsigned int colNum) const;
 
 	bool addMathVectorToEndsOfEachVector(const MathVector& v, unsigned int const primarySpaceSize,
 		unsigned int & vectorSpaceSize);

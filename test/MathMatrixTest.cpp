@@ -1,6 +1,6 @@
-#include "pch.h"
+#include <gtest/gtest.h>
 
-#include "../MatrixLibrary/MathMatrix.h"
+#include "MatrixLibrary/matrix_library.h"
 #include <ostream>
 
 namespace MATRIX_LIBRARY_TESTS {

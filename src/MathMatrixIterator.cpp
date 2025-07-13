@@ -30,8 +30,7 @@ MathMatrixIterator MathMatrixIterator::operator++(int)
 	return tmp;
 }
 
-double& MathMatrixIterator::operator*()
-{
+double& MathMatrixIterator::operator*() const {
 	return (**ptr_)[posInVec_];
 }
 
