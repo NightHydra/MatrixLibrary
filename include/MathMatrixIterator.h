@@ -22,6 +22,7 @@ public:
 	double& operator*() const;
 
 	bool operator==(const MathMatrixIterator& other) const;
+	bool operator!=(const MathMatrixIterator& other) const;
 
 	unsigned int operator-(const MathMatrixIterator& other) const;
 

@@ -1,6 +1,7 @@
 #ifndef __MATH_VECTOR_H__
 #define __MATH_VECTOR_H__
 #include <initializer_list>
+#include <vector>
 
 unsigned int pow2Above(unsigned int n);
 
@@ -14,6 +15,8 @@ public:
 	MathVector();
 
 	MathVector(unsigned int size);
+
+	MathVector(const std::vector<double>& stdVec);
 
 	MathVector(const MathVector& other) { this->copyVector(other); }
 	MathVector& operator= (const MathVector& other)

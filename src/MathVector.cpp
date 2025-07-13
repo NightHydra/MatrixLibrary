@@ -34,6 +34,8 @@ MathVector::MathVector(unsigned int size)
 	{
 		size_ = 0;
 		preAlloc_ = 0;
+
+		data_ = nullptr;
 	}
 	else
 	{
@@ -53,6 +55,33 @@ MathVector::MathVector(unsigned int size)
 			data_[i] = 0.0F;
 		}
 	}
+}
+
+MathVector::MathVector(const std::vector<double> & stdVec)
+{
+	if (stdVec.empty())
+	{
+		size_ = 0;
+		preAlloc_ = 0;
+	}
+	else
+	{
+		size_ = stdVec.size();
+
+		preAlloc_ = 2;
+
+		while (preAlloc_ < size_)
+		{
+			preAlloc_ <<= 1;
+		}
+		data_ = new double[preAlloc_];
+
+		for (unsigned int i = 0; i < size_; ++i)
+		{
+			data_[i] = stdVec[i];
+		}
+	}
+
 }
 
 MathVector::MathVector(const std::initializer_list<double> arr)

@@ -40,6 +40,11 @@ bool MathMatrixIterator::operator==(const MathMatrixIterator& other) const
 		this->access_to_increment == other.access_to_increment);
 }
 
+bool MathMatrixIterator::operator!=(const MathMatrixIterator& other) const
+{
+	return !(*this == other);
+}
+
 unsigned int MathMatrixIterator::operator-(const MathMatrixIterator& other) const
 {
 	// We can add them since only one should be different and the other should be
