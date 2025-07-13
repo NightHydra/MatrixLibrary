@@ -40,6 +40,7 @@ public:
 	MathMatrix& operator=(const std::initializer_list < std::initializer_list<double>> list2d);
 
 	// Programming related helper functions
+	void clear();
 
 	double getVal(unsigned int row, unsigned int col) const;
 	bool setVal(unsigned int row, unsigned int col, double valueToSetTo) const;

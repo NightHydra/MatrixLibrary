@@ -131,6 +131,16 @@ MathMatrix& MathMatrix::operator=(const std::initializer_list < std::initializer
 	return (*this);
 }
 
+/**
+ * @brief This function sets the matrix back to a 0x0 matrix keeping all configurations
+ *     such as the space to represent the matrix as, to what they are currently set to.
+ */
+void MathMatrix::clear()
+{
+	cleanUpDynamicallyAllocatedMemory();
+	numRows_ = numCols_ = numRowsSeenInOperations_ = numColsSeenInOperations_ = numRowsSeenInOperations_ = preAlloc_ = 0;
+	vectorSpace_ = nullptr;
+}
 
 bool MathMatrix::equals(const MathMatrix& other) const
 {
@@ -576,7 +586,7 @@ MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2)
 		MathMatrix result(numRowsInNewMatrix, numColsInNewMatrix);
 
 		// The result of the dot product
-		double dotProdRes;
+		double dotProdRes = 0.0;
 		for (unsigned int i = 0; i < numRowsInNewMatrix; ++i)
 		{
 			for (unsigned int j = 0; j < numColsInNewMatrix; ++j)
