@@ -1,7 +1,28 @@
 #include "MathMatrix.h"
 #include <cmath>
 
+/* ================================================================================================
+ * Constructor Definitions
+ * ==============================================================================================*/
+
+/**
+ * @brief Initializes a 0x0 MathMatrix object.
+ * @note This constructor does not allocate memory for any dynamically allocated
+ *     pointers since a 0x0 matrix does not need to have memory allocated for it yet.
+ */
 MathMatrix::MathMatrix() = default;
+
+/**
+ * @brief Constructor for generating a (n x m) matrix where n = @ref numRows and
+ *     m = @ref numCols.
+ * @param numRows Is the number of rows to initialize the matrix with.  If this equals 0
+ *     then a 0x0 matrix will be created no matter the value of @ref numCols.
+ * @param numCols Is the number of columns to initialize the matrix with.  If this equals 0
+ *    then a 0x0 matrix will be created and pointers will not be allocated memory.
+ * @todo Add an optional parameter for a value of type @ref vector_space_t allowing
+ *     for the user to specify whether the matrix is represented as a rowspace or columnspace
+ *     in the underlying representation.
+ */
 MathMatrix::MathMatrix(unsigned int numRows, unsigned int numCols)
 {
 	numRows_ = numRows;
@@ -34,6 +55,15 @@ MathMatrix::MathMatrix(unsigned int numRows, unsigned int numCols)
 	}
 }
 
+/**
+ *
+ * @param v The vector used to create a 1xn matrix or nx1 matrix that consists of
+ *     of only the vector.  For example, if @ref spaceOfVector is set to @ref ROWSPACE
+ *     and v = {1,2,3} then a Matrix object will be created with only 1 row.
+ * @param spaceOfVector Is whether the vector used to create the matrix is a row vector
+ *     or column vector within the matrix. If @ref spaceOfVector = @ref ROWSPACE then it will
+ *     be a row vecotr.  If @ref spaceOfVector = @ref COLUMNSPACE then it will be a column vector.
+ */
 MathMatrix::MathMatrix(const MathVector& v, vector_space_t spaceOfVector)
 {
 	unsigned int vSize = v.getOperationSize();
@@ -105,10 +135,52 @@ MathMatrix::MathMatrix(const MathVector& colVector, const MathVector& rowVector)
 	}
 }
 
+/**
+ * @brief This allows users to hardcode a matrix using the following syntax.
+ *    MathMatrix m( { {1,2,3}, {4,5,6}, {7,8,9}});
+ * @param list2d Is the 2d list to make the matrix from.
+ * @note The list is not passed by reference because the user might be hardcoding the
+ *     initializer list in which case the list has no assigned address.
+ */
+MathMatrix::MathMatrix(const std::initializer_list < std::initializer_list<double>> list2d)
+{
+	makeMatrixFromInitLists(list2d);
+}
+
+/* ================================================================================================
+ * Rule of 5 function definitions (6 are actually defined to allow for assignment to init lists)
+ * ===============================================================================================*/
+
+/**
+ * @brief This function defines the copy constructor since the class uses dynamically
+ *     allocated memory.
+ * @param other The matrix to copy from
+ */
 MathMatrix::MathMatrix(const MathMatrix& other)
 {
 	copy(other);
 }
+
+/**
+ * @brief This function defines the move operator to prevent needlessly copying dynamically
+ *     allocated memory if not necessary.
+ * @param other
+ */
+MathMatrix::MathMatrix(MathMatrix&& other) noexcept
+{
+	copyNonPointerMembers(other);
+	movePointersFromOtherMatrix(other);
+
+	// Ensure we default the copied matrix so the destructor does not try to delete a nullptr
+	other.clear();
+}
+
+/**
+ *
+ * @param other The matrix to be copied by the assignment operator.
+ * @return The matrix that @ref other was copied into.  Returning the matrix
+ *    allows for triple assignment (ie. m = m1 = m2).
+ */
 MathMatrix& MathMatrix::operator=(const MathMatrix& other)
 {
 	if (&other == this)
@@ -120,16 +192,40 @@ MathMatrix& MathMatrix::operator=(const MathMatrix& other)
 	return *this;
 }
 
-MathMatrix::MathMatrix(const std::initializer_list < std::initializer_list<double>> list2d)
+/**
+ *
+ * @param other The matrix to move into the matrix variable on thel left side of the equals sign.
+ * @return The matrix object that the matrix in @ref other was moved into.
+ */
+MathMatrix& MathMatrix::operator=(MathMatrix&& other) noexcept
 {
-	makeMatrixFromInitLists(list2d);
+	if (&other == this)
+	{
+		return *this;
+	}
+	cleanUpDynamicallyAllocatedMemory();
+	copyNonPointerMembers(other);
+	movePointersFromOtherMatrix(other);
+
+	other.clear();
+
+	return *this;
 }
+
+/**
+ * @brief A constructor defined to allow for the construction of a @ref MathMatrix object
+ *     with the syntax m = { {1,2,3}, {4,5,6}, {7,8,9}};
+ * @param list2d The list representing the matrix to generate.
+ * @return The Matrix object represented by the matrix on the left side of the equals sign.
+ */
 MathMatrix& MathMatrix::operator=(const std::initializer_list < std::initializer_list<double>> list2d)
 {
 	cleanUpDynamicallyAllocatedMemory();
 	makeMatrixFromInitLists(list2d);
 	return (*this);
 }
+
+
 
 /**
  * @brief This function sets the matrix back to a 0x0 matrix keeping all configurations
@@ -142,6 +238,15 @@ void MathMatrix::clear()
 	vectorSpace_ = nullptr;
 }
 
+/**
+ * @brief Matrix comparison.  The underlying space representations do not need to match
+ *     in order for this to return true.  However, the abstracted matrix needs to the same
+ *     for the comparison to return true.
+ * @param other The object of type @ref MathMatrix to compare this matrix to.
+ * @return True if the abstracted matrices are equal (ie. get(i,j) = other.get(i,j)) for all i,j.
+ *     False if the matrices are not equal.
+ * @todo The function does not actually do the correct comparison now.
+ */
 bool MathMatrix::equals(const MathMatrix& other) const
 {
 	unsigned int m1NumberOfRows = this->getNumRowsInOperationSize();
@@ -153,8 +258,11 @@ bool MathMatrix::equals(const MathMatrix& other) const
 	{
 		return false; // <--- RETURN FALSE SINCE SIZES DONT MATCH
 	}
+
 	return true;
 }
+
+
 /**
  * @brief Compares the matrix to 2d initializer lists.  Each inner initialzer list will be
  *     treated as a row in the matrix to provide understandable comparisons
@@ -203,6 +311,16 @@ bool MathMatrix::equals(const std::initializer_list<std::initializer_list<double
 
 // Programming related helper functions
 
+/**
+ *
+ * @param row The row of the abstracted matrix to get the value of.
+ * @param col The column of the abstracted matrix to get the value of.
+ * @return The value at (row, col) of the matrix.  If the value is out of bounds for the size
+ *     of the matrix then the value NAN is returned.
+ * @note The space in which the matrix is represented as does not effect the results of this
+ *     function.  Whether the matrix is represented as a row or column space does not affect
+ *     how the user uses it for operations.
+ */
 double MathMatrix::getVal(unsigned int row, unsigned int col) const
 {
 	if (row >= numRows_ || col >= numCols_) { return NAN;}
@@ -218,6 +336,7 @@ double MathMatrix::getVal(unsigned int row, unsigned int col) const
 
 	return (*vectorSpace_[firstAccess])[secondAccess];
 }
+
 bool MathMatrix::setVal(unsigned int row, unsigned int col, double valueToSetTo) const
 {
 	if (row >= numRows_ || col >= numCols_) { return false; }
@@ -622,11 +741,17 @@ MathMatrix createProjectionMatrix(const MathVector& vectorToFindProjectionMatrix
 
 
 
-//==================================================================================================
-// Private helper functions for the class
-//=================================================================================================
+/* ================================================================================================
+ * Private helper functions for the class
+ * ================================================================================================
 
-void MathMatrix::cleanUpDynamicallyAllocatedMemory() const {
+
+/* ================================================================================================
+ * Rule of 5 function helper function definitions
+ * ===============================================================================================*/
+
+
+void MathMatrix::cleanUpDynamicallyAllocatedMemory() {
 	unsigned int numToDelete = numCols_;
 	if (spaceToRepresentMatrixAs_ == ROWSPACE)
 	{
@@ -638,9 +763,12 @@ void MathMatrix::cleanUpDynamicallyAllocatedMemory() const {
 		delete vectorSpace_[i];
 	}
 	delete vectorSpace_;
+
+	// Make sure to set the memory pointer to null so there isnt a dangling pointer.
+	vectorSpace_ = nullptr;
 }
 
-void MathMatrix::copy(const MathMatrix& other)
+void MathMatrix::copyNonPointerMembers(const MathMatrix& other)
 {
 	this->spaceToRepresentMatrixAs_ = other.spaceToRepresentMatrixAs_;
 	this->numRows_ = other.numRows_;
@@ -652,6 +780,16 @@ void MathMatrix::copy(const MathMatrix& other)
 	this->numColsSeenInOperations_ = other.numColsSeenInOperations_;
 	this->useNonDefaultNumberOfRows_ = other.useNonDefaultNumberOfRows_;
 	this->useNonDefaultNumberOfCols_ = other.useNonDefaultNumberOfCols_;
+}
+
+void MathMatrix::movePointersFromOtherMatrix(const MathMatrix& other)
+{
+	vectorSpace_ = other.vectorSpace_;
+}
+
+void MathMatrix::copy(const MathMatrix& other)
+{
+	copyNonPointerMembers(other);
 
 	// Now copy the dynamically allocated memory portion
 	vectorSpace_ = new MathVector * [preAlloc_];

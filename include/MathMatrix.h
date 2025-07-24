@@ -32,9 +32,14 @@ public:
 	MathMatrix(unsigned int numRows, unsigned int numCols);
 	MathMatrix(const MathVector& v, vector_space_t spaceOfVector);
 	MathMatrix(const MathVector& colVector, const MathVector& rowVector);
+
+	// Rule of 5 Custom Functions
 	~MathMatrix() { cleanUpDynamicallyAllocatedMemory(); }
 	MathMatrix(const MathMatrix& other);
+	MathMatrix(MathMatrix&& other) noexcept;
+
 	MathMatrix& operator=(const MathMatrix& other);
+	MathMatrix& operator=(MathMatrix&& other) noexcept;
 
 	MathMatrix(const std::initializer_list < std::initializer_list<double>> list2d);
 	MathMatrix& operator=(const std::initializer_list < std::initializer_list<double>> list2d);
@@ -87,8 +92,10 @@ private:
 	void makeMatrixFromInitLists(const std::initializer_list<std::initializer_list<double>>& list2d);
 
 	// Dynamically Allocated Memory Helper Functions
-	void cleanUpDynamicallyAllocatedMemory() const;
+	void cleanUpDynamicallyAllocatedMemory();
+	void copyNonPointerMembers(const MathMatrix& other);
 	void copy(const MathMatrix& other);
+	void movePointersFromOtherMatrix(const MathMatrix& other);
 
 	bool isRowNumInOperationBounds(unsigned int rowNum) const;
 	bool isColNumInOperationBounds(unsigned int colNum) const;
