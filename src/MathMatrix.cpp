@@ -312,7 +312,9 @@ bool MathMatrix::equals(const std::initializer_list<std::initializer_list<double
 // Programming related helper functions
 
 /**
- *
+ * @brief Gets the value at row @ref row and column @ref col in the matrix object if (@ref row, @ref col) is
+ *     within the bounds of the matrix.  Returns NAN if (@ref row, @ref col) is not within the bounds
+ *     of the matrix.
  * @param row The row of the abstracted matrix to get the value of.
  * @param col The column of the abstracted matrix to get the value of.
  * @return The value at (row, col) of the matrix.  If the value is out of bounds for the size
@@ -337,6 +339,16 @@ double MathMatrix::getVal(unsigned int row, unsigned int col) const
 	return (*vectorSpace_[firstAccess])[secondAccess];
 }
 
+/**
+ * @brief Setter for a specific index of the matrix.
+ * @param row is the row of the matrix to set.
+ * @param col is the column of the matrix to set.
+ * @param valueToSetTo is the value that (@ref row, @ref column) is set to.
+ * @return true if the index of the matrix was successfully set to @ref valueToSetTo and
+ *     false if the value was not successully set.  The value will not be successfully
+ *     set to @ref valueToSetTo if (@ref row, @ref col) is not within the bounds of the matrix.
+ *     In this case this function will return false.
+ */
 bool MathMatrix::setVal(unsigned int row, unsigned int col, double valueToSetTo) const
 {
 	if (row >= numRows_ || col >= numCols_) { return false; }
@@ -355,6 +367,14 @@ bool MathMatrix::setVal(unsigned int row, unsigned int col, double valueToSetTo)
 	return true;
 }
 
+/**
+ * @brief Returns the number of rows that the matrix that is seen when performing operations.
+ *    This is intended to be used for erasing rows of the matrix without actually removing them
+ *    incase that row needs to be used.
+ * @return The number of rows that are seen by operations in the matrix.
+ * @todo Functionality for not using the number of rows that are actually stored needs
+ *    to have specifications written around the feature of the library.
+ */
 unsigned int MathMatrix::getNumRowsInOperationSize() const
 {
 	if (useNonDefaultNumberOfRows_ == true)
@@ -367,6 +387,14 @@ unsigned int MathMatrix::getNumRowsInOperationSize() const
 	}
 }
 
+/**
+ * @brief Returns the number of columns that the matrix that is seen when performing operations.
+ *    This is intended to be used for erasing columns of the matrix without actually removing them
+ *    incase that column needs to be used.
+ * @return The number of columns that are seen by operations in the matrix.
+ * @todo Functionality for not using the number of columns that are actually stored needs
+ *    to have specifications written around the feature of the library.
+ */
 unsigned int MathMatrix::getNumColsInOperationSize() const
 {
 	if (useNonDefaultNumberOfCols_ == true)
@@ -379,6 +407,15 @@ unsigned int MathMatrix::getNumColsInOperationSize() const
 	}
 }
 
+/**
+ * @brief A function to add a row to the back of the matrix.
+ * @param rowToAdd is a variable of type @ref MathVector to be added after the last row of the matrix.
+ *     The size of this @ref MathVector must by the same size as every other row in the matrix
+ *     or else the row will not be added and the function will return false.
+ * @return true is the row could successfully be added to the end of the matrix and false if the
+ *     row could not be successfully added due to the row not having the same size as every other row
+ *     in the matrix.
+ */
 bool MathMatrix::addRow(const MathVector& rowToAdd)
 {
 	bool vectorSuccessfullyAdded = false;
@@ -399,6 +436,15 @@ bool MathMatrix::addRow(const MathVector& rowToAdd)
 	return vectorSuccessfullyAdded;
 }
 
+/**
+ * @brief A function to add a column to the back of the matrix.
+ * @param colToAdd is a variable of type @ref MathVector to be added after the last column of the matrix.
+ *     The size of this @ref MathVector must by the same size as every other column in the matrix
+ *     or else the column will not be added and the function will return false.
+ * @return true is the column could successfully be added to the end of the matrix and false if the
+ *     column could not be successfully added due to the column not having the same size as every
+ *     other column in the matrix.
+ */
 bool MathMatrix::addCol(const MathVector& colToAdd)
 {
 	bool vectorSuccessfullyAdded = false;
@@ -423,12 +469,23 @@ bool MathMatrix::addCol(const MathVector& colToAdd)
 // Math related operations
 //======================================================================
 
+/**
+ * @brief A function to swap rows in the matrix.  Swaps the index of @ref rowNum1 and @ref rowNum2
+ *     if both rows are defined within the matrix.
+ * @param rowNum1 The first row to swap positions with.
+ * @param rowNum2 The second row to swap positions with.
+ * @return true if the function could successfully swap the rows in the matrix.  This function
+ *     returns false if the function could not successfully swap rows due to one of the two
+ *     row indexes being outside the bounds of the matrix or due to some other issue.
+ * @note This function is far more efficient if the underlying matrix is represented as a row
+ *     vector space of row vectors.  This still works if the matrix is represented as a column
+ *     space, though it will have O(c) runtime where c is the number of columns within the matrix.
+ */
 bool MathMatrix::swapRows(unsigned int rowNum1, unsigned int rowNum2)
 {
 	// Check the bounds first
 	unsigned int rowNumUpperBound = getNumRowsInOperationSize();
-	if ((rowNum1 < 0) || (rowNum2) < 0 || (rowNum1 >= rowNumUpperBound) || 
-		(rowNum2 >= rowNumUpperBound))
+	if ((rowNum1 >= rowNumUpperBound) || (rowNum2 >= rowNumUpperBound))
 	{
 		return false;
 	}
@@ -473,6 +530,19 @@ bool MathMatrix::swapRows(unsigned int rowNum1, unsigned int rowNum2)
 	// Finally we can return true since the swaps have all been successful
 	return true;
 }
+
+/**
+ * @brief A function to swap columns in the matrix.  Swaps the index of @ref colNum1 and @ref colNum2
+ *     if both columns are defined within the matrix.
+ * @param colNum1 The first column to swap positions with.
+ * @param colNum2 The second column to swap positions with.
+ * @return true if the function could successfully swap the columns in the matrix.  This function
+ *     returns false if the function could not successfully swap columns due to one of the two
+ *     column indexes being outside the bounds of the matrix or due to some other issue.
+ * @note This function is far more efficient if the underlying matrix is represented as a column
+ *     vector space of column vectors.  This still works if the matrix is represented as a row
+ *     space, though it will have O(r) runtime where r is the number of rows within the matrix.
+ */
 bool MathMatrix::swapCols(unsigned int colNum1, unsigned int colNum2)
 {
 	// Check the bounds first
@@ -569,6 +639,16 @@ bool MathMatrix::addMultipleOfRow(unsigned int rowNumToAddTo, unsigned int rowNu
 	return true;
 }
 
+/**
+ * @brief multiplies every value in a row by a constant.
+ * @param row is the index of the row to multiply by @ref constant.
+ * @param constant Is the constant to multiply every element in the row by.
+ * @return true if every value in the row was successfully multiplied by the constant and returns
+ *     false if the operation was not successfully.  If the operation is unsuccessful, the row
+ *     is unchanged.  The function would return false if the row index given is out of bounds
+ *     or if @ref constant is equal to NAN.
+ * @todo Handle the case where constant is equal to NAN.
+ */
 bool MathMatrix::multiplyRowByConstant(unsigned int row, double constant)
 {
 	if (!isRowNumInOperationBounds(row))
