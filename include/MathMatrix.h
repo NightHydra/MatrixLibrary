@@ -95,7 +95,7 @@ private:
 	void cleanUpDynamicallyAllocatedMemory();
 	void copyNonPointerMembers(const MathMatrix& other);
 	void copy(const MathMatrix& other);
-	void movePointersFromOtherMatrix(const MathMatrix& other);
+	void movePointersFromOtherMatrix(MathMatrix& other);
 
 	bool isRowNumInOperationBounds(unsigned int rowNum) const;
 	bool isColNumInOperationBounds(unsigned int colNum) const;
@@ -123,14 +123,32 @@ private:
 	 */
 	MathVector** vectorSpace_ = nullptr;
 
+	/**
+	 * @brief The number size to allocate allowing for O(1) amortized when adding to the
+	 *     space that the matrix is represented as.
+	 */
 	unsigned int preAlloc_ = 0;
 
+	//@{
+	/**
+	 * @brief Variables that represent the number of rows seen when performing matrix operations
+	 *     and the number of columns seen when performing matrix operations.  This feature allows
+	 *     for users to select a subset of the matrix when performing operations without reducing
+	 *     the size of the matrix.  This allows for the values to be used later.
+	 */
 	unsigned int numRowsSeenInOperations_ = 0;
 	unsigned int numColsSeenInOperations_ = 0;
+	//@}
 
+	//@{
+	/**
+	 * @brief Two booleans which represent whether the matrix is using non default sizing.
+	 *    This would generally be set later after defining the matrix to ignore some rows or
+	 *    columns when performing operations.
+	 */
 	bool useNonDefaultNumberOfRows_ = false;
 	bool useNonDefaultNumberOfCols_ = false;
-
+	//@}
 };
 
 MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2);

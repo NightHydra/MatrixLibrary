@@ -594,8 +594,21 @@ bool MathMatrix::swapCols(unsigned int colNum1, unsigned int colNum2)
 	return true;
 }
 
+/**
+ * @brief A function which adds a multiple of one row to another row within the matrix.
+ *    This operation is useful for larger operations such as for finding the rref of a matrix object.
+ *    The mathematical function represented by this operation is Rk1 <- Rk1 + C*Rk2 where
+ *    Rk1 = @ref rowNumToAddTo, Rk2 = @ref rowNumToAdd, C = multiple
+ * @param rowNumToAddTo The index of the row which will be added to
+ * @param rowNumToAdd The index of the row which is being added to @ref rowNumToAddTo.
+ * @param multiple is the constant to multiply @ref rowNumToAdd by.
+ * @return A boolean indicating whether the operation was successful.  If the function
+ *     returns true then the operation was completed successfully.  If the function returns
+ *     false then the matrix remained unchanged due to an invalid input.
+ * @todo Add a check for when @ref multiple = NAN and return false.
+ */
 bool MathMatrix::addMultipleOfRow(unsigned int rowNumToAddTo, unsigned int rowNumToAdd,
-	double multiple)
+                                  double multiple)
 {
 	// Check the bounds first
 	if (!isRowNumInOperationBounds(rowNumToAddTo) ||
@@ -678,7 +691,9 @@ bool MathMatrix::multiplyRowByConstant(unsigned int row, double constant)
 }
 
 /**
- * @brief Transposes the matrix.
+ * @brief A function that performs the transpose operation on the matrix object.
+ *     This function is extremely efficient due to it just changing the space in which the matrix
+ *     is represented as instead of swapping any actual data.
  * @return true if the matrix could be transposed and false if the matrix
  *     does not have a transpose
  * @note This function will transpose the entire matrix and WILL NOT use
@@ -687,13 +702,13 @@ bool MathMatrix::multiplyRowByConstant(unsigned int row, double constant)
  */
 void MathMatrix::transpose()
 {
-	unsigned int unsgined_temp;
+	unsigned int unsigned_temp;
 
 	// Swap the number of rows with the number of columns
-	unsgined_temp = numRows_; numRows_ = numCols_; numCols_ = unsgined_temp;
+	unsigned_temp = numRows_; numRows_ = numCols_; numCols_ = unsigned_temp;
 
-	unsgined_temp = numRowsSeenInOperations_; numRowsSeenInOperations_ = numColsSeenInOperations_;
-	numColsSeenInOperations_ = unsgined_temp;
+	unsigned_temp = numRowsSeenInOperations_; numRowsSeenInOperations_ = numColsSeenInOperations_;
+	numColsSeenInOperations_ = unsigned_temp;
 
 	bool booltemp;
 
@@ -716,6 +731,12 @@ void MathMatrix::transpose()
 	}
 }
 
+/**
+ * @brief A function which returns an iterator that with iterate over a row within the matrix.
+ *    The iterator starts at the beginning of row @ref row.
+ * @param row is the row for the iterator to iterate over.
+ * @return An iterator that when incremented will iterate over the matrix.
+ */
 MathMatrixIterator MathMatrix::rowBegin(unsigned int const row) const
 {
 	if (spaceToRepresentMatrixAs_ == ROWSPACE)
@@ -727,6 +748,14 @@ MathMatrixIterator MathMatrix::rowBegin(unsigned int const row) const
 		return MathMatrixIterator(vectorSpace_ + 0, row , spaceToRepresentMatrixAs_, ROWSPACE);
 	}
 }
+
+/**
+ * @brief A function which returns an iterator that points to one past the last index of the row
+ *     indicated by @ref row.  This is useful for iterating over an entire row and knowing
+ *     when to stop.
+ * @param row is the row to iterate over.
+ * @return An iterator that points to one past the last index in the row.
+ */
 MathMatrixIterator MathMatrix::rowEnd(unsigned int const row) const
 {
 	unsigned int endCol = getNumColsInOperationSize();
@@ -768,6 +797,17 @@ MathMatrixIterator MathMatrix::colEnd(unsigned int const col) const
 // Outside of class functions that are still related to the class
 //=================================================================================================
 
+/**
+ * @brief A function to perform matrix multiplication on two matrices and return the result.
+ *    The operation represented by this function is m1*m2.
+ * @param m1 Is the left matrix to multiply.
+ * @param m2 Is the right matrix to multiply.
+ * @return The result of matrix m1*m2 if the matices are of the corrent size.  If either matrix
+ *     is the empty matrix or the sizes are incompatible for multiplication then the function
+ *     returns an empty matrix.
+ * @note Matrices can only be multipled if the number of columns in @ref m1 is equal to the number
+ *     of rows in @ref m2.
+ */
 MathMatrix operator*(const MathMatrix& m1, const MathMatrix& m2)
 {
 	// Make a new matrix with the correct size
@@ -830,7 +870,10 @@ MathMatrix createProjectionMatrix(const MathVector& vectorToFindProjectionMatrix
  * Rule of 5 function helper function definitions
  * ===============================================================================================*/
 
-
+/**
+ * @brief A function that cleans up all dynamically allocated memory within the function
+ *    and resets the pointers to nullptr.
+ */
 void MathMatrix::cleanUpDynamicallyAllocatedMemory() {
 	unsigned int numToDelete = numCols_;
 	if (spaceToRepresentMatrixAs_ == ROWSPACE)
@@ -838,16 +881,25 @@ void MathMatrix::cleanUpDynamicallyAllocatedMemory() {
 		numToDelete = numRows_;
 	}
 
-	for (unsigned int i = 0; i < numToDelete; ++i)
+	if (vectorSpace_ != nullptr)
 	{
-		delete vectorSpace_[i];
-	}
-	delete vectorSpace_;
+		for (unsigned int i = 0; i < numToDelete; ++i)
+		{
+			delete vectorSpace_[i];
+		}
+		delete vectorSpace_;
 
-	// Make sure to set the memory pointer to null so there isnt a dangling pointer.
-	vectorSpace_ = nullptr;
+		// Make sure to set the memory pointer to null so there isnt a dangling pointer.
+		vectorSpace_ = nullptr;
+	}
 }
 
+/**
+ * @brief A function that copies all non-pointer members from @ref other to
+ *     this matrix object.
+ * @param other Copies all the non pointer members of the function to their respective
+ *     class variables of this objects instance.
+ */
 void MathMatrix::copyNonPointerMembers(const MathMatrix& other)
 {
 	this->spaceToRepresentMatrixAs_ = other.spaceToRepresentMatrixAs_;
@@ -862,11 +914,21 @@ void MathMatrix::copyNonPointerMembers(const MathMatrix& other)
 	this->useNonDefaultNumberOfCols_ = other.useNonDefaultNumberOfCols_;
 }
 
-void MathMatrix::movePointersFromOtherMatrix(const MathMatrix& other)
+/**
+ * @brief A function that moves pointers from another matrix to the current matrix.
+ *     This is really useful for the move constructor to copy pointers.
+ * @param other Is the matrix with which to move the pointers from.
+ */
+void MathMatrix::movePointersFromOtherMatrix(MathMatrix& other)
 {
 	vectorSpace_ = other.vectorSpace_;
+	other.vectorSpace_ = nullptr;
 }
 
+/**
+ * @brief A function that copies the matrix in object @ref other.
+ * @param other The matrix to copy from.
+ */
 void MathMatrix::copy(const MathMatrix& other)
 {
 	copyNonPointerMembers(other);
@@ -891,10 +953,25 @@ void MathMatrix::copy(const MathMatrix& other)
 	}
 }
 
+/**
+ * @brief A function that returns whether the index of a specific row is within
+ *     the "operation bounds" of the matrix.
+ * @param rowNum Is the row number that is being checked for whether it is in the operation
+ *     bounds of the matrix.
+ * @return true if the row is within the operation bounds of the matrix and false if it is not.
+ */
 bool MathMatrix::isRowNumInOperationBounds(unsigned int rowNum) const
 {
 	return (rowNum > 0) && (rowNum < getNumRowsInOperationSize());
 }
+
+/**
+ * @brief A function that returns whether the index of a specific column is within
+ *     the "operation bounds" of the matrix.
+ * @param colNum Is the row number that is being checked for whether it is in the operation
+ *     bounds of the matrix.
+ * @return true if the cilumn is within the operation bounds of the matrix and false if it is not.
+ */
 bool MathMatrix::isColNumInOperationBounds(unsigned int colNum) const
 {
 	return (colNum > 0) && (colNum < getNumColsInOperationSize());
@@ -904,7 +981,7 @@ bool MathMatrix::isColNumInOperationBounds(unsigned int colNum) const
  * @brief Adds each element in v to the end of each vector made up in the space of the matrix
  * @param v is the vector to add.
  * @param innerSpaceSize[in, out] is a reference to the size of 
- * @note This private member function provides no bounds check as it does not care about whether or not
+ * @note This private member function provides no bounds check as it does not care about whether
  *     the matrix is represented as a row space or a column space
  */
 bool MathMatrix::addMathVectorToEndsOfEachVector(const MathVector& v, unsigned int const vectorSpaceSize,
@@ -963,6 +1040,12 @@ bool MathMatrix::addMathVectorToSameSpace(const MathVector& v, unsigned int & ve
 	return true;
 }
 
+/**
+ * @brief A function that is used for the constructors of making matrices from initializer lists
+ *     allowing users to more easily create matrices without needing to set each individual
+ *     row and column.
+ * @param list2d The 2D initializer list with which to generate the matrix from.
+ */
 void MathMatrix::makeMatrixFromInitLists(const std::initializer_list<std::initializer_list<double>>& list2d)
 {
 	if (list2d.size() == 0)
